@@ -1,0 +1,364 @@
+@import url('https://fonts.googleapis.com/css2?family=Rye&family=Cinzel:wght@700&family=Special+Elite&display=swap');
+
+:root {
+    --bg-dark: #1e130c;
+    --bg-panel: #2a1b15;
+    --gold: #d4af37;
+    --gold-dim: #8a7122;
+    --text-light: #f5f5dc;
+    --text-muted: #c2b280;
+    --border-color: #d4af37;
+    --danger: #8b0000;
+
+    --header-font: 'Rye', serif;
+    --body-font: 'Cinzel', serif;
+    --mono-font: 'Special Elite', monospace;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+    font-family: var(--body-font);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* MAIN CONTAINER (PREMIUM LOOK) */
+.ranch-ui-container {
+    width: 70%;
+    max-width: 1100px;
+    height: 80%;
+    background-color: var(--bg-dark);
+    background-image:
+        radial-gradient(circle at center, rgba(212, 175, 55, 0.05) 0%, transparent 70%),
+        url('https://www.transparenttextures.com/patterns/black-scales.png');
+    border: 4px solid var(--gold);
+    box-shadow:
+        0 0 0 8px var(--bg-dark),
+        /* Inner gap */
+        0 0 0 10px var(--gold-dim),
+        /* Outer border */
+        0 20px 50px rgba(0, 0, 0, 0.9);
+    border-radius: 4px;
+    padding: 2.5rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-light);
+    z-index: 9999;
+}
+
+/* ORNATE CORNERS */
+.ranch-ui-container::before,
+.ranch-ui-container::after {
+    display: none;
+    /* Replaced by border design */
+}
+
+/* HEADER */
+.ui-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--gold-dim);
+    padding-bottom: 1.5rem;
+    background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.1), transparent);
+}
+
+.ui-header h1 {
+    font-family: var(--header-font);
+    font-size: 3.5rem;
+    margin: 0;
+    color: var(--gold);
+    text-transform: uppercase;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    letter-spacing: 4px;
+}
+
+.ui-header span {
+    font-family: var(--body-font);
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* CONTENT GRID */
+.ui-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+    padding: 0.5rem;
+    pointer-events: auto !important;
+}
+
+/* STATUS MENU OVERRIDE */
+.status-layout {
+    display: flex !important;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.status-row {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.status-info {
+    font-family: var(--body-font);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    width: 100%;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+}
+
+/* CUSTOM SCROLLBAR */
+.ui-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ui-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.ui-content::-webkit-scrollbar-thumb {
+    background: var(--gold-dim);
+    border-radius: 3px;
+}
+
+/* CARDS (PREMIUM) */
+.item-card {
+    background: linear-gradient(135deg, var(--bg-panel) 0%, #3e2723 100%);
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+    position: relative;
+    /* overflow: hidden; -- REMOVED to show button */
+    min-height: 250px;
+    /* Ensure space for button */
+    pointer-events: auto !important;
+}
+
+.item-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--gold);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(212, 175, 55, 0.1);
+}
+
+.item-title {
+    font-family: var(--body-font);
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem;
+    color: var(--text-light);
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.item-price {
+    font-family: var(--mono-font);
+    font-weight: bold;
+    color: var(--gold);
+    font-size: 1.3rem;
+    margin-bottom: 1.2rem;
+    margin-bottom: 1.2rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.card-icon {
+    font-size: 2.5rem;
+    color: var(--gold-dim);
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.item-card:hover .card-icon {
+    color: var(--gold);
+    transform: scale(1.1);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+}
+
+/* LUXURY BUTTON */
+.item-btn {
+    margin-top: auto;
+    background: linear-gradient(to bottom, var(--gold) 0%, var(--gold-dim) 100%);
+    color: #1e130c;
+    border: 1px solid #ffd700;
+    padding: 0.6rem 1.2rem;
+    font-family: var(--body-font);
+    font-weight: 800;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    width: 100%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    border-radius: 2px;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.item-btn:hover {
+    filter: brightness(1.2);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+}
+
+/* BOSS STATS STRIP */
+.boss-stats {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    /* Ensure full width */
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+    box-sizing: border-box;
+    /* Include padding/border in width */
+    padding: 0 1rem;
+    /* Add some padding to prevent edge touches */
+}
+
+.stat-box {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--gold-dim);
+    padding: 1rem;
+    flex: 1;
+    /* Grow evenly */
+    min-width: 0;
+    /* Prevent overflow */
+    text-align: center;
+    border-radius: 2px;
+}
+
+.stat-box div:first-child {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    letter-spacing: 1px;
+}
+
+.stat-box div:last-child {
+    font-size: 1.8rem;
+    color: var(--gold);
+    font-family: var(--mono-font);
+}
+
+/* CLOSE BUTTON */
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    border: 2px solid var(--danger);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-family: var(--header-font);
+    font-size: 1.2rem;
+    color: var(--danger);
+    cursor: pointer;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.close-btn:hover {
+    background: var(--danger);
+    color: var(--text-light);
+    transform: rotate(90deg);
+}
+
+/* Extra flair */
+@keyframes glow {
+    from {
+        box-shadow: 0 0 5px var(--gold-dim);
+    }
+
+    to {
+        box-shadow: 0 0 20px var(--gold);
+    }
+}
+
+/* PROGRESS BAR */
+#custom-progress-container {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    background: rgba(30, 19, 12, 0.95);
+    border: 3px solid var(--gold);
+    padding: 15px 25px;
+    border-radius: 4px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 5px rgba(139, 69, 19, 0.5);
+    text-align: center;
+    z-index: 10000;
+}
+
+#progress-label {
+    font-family: var(--header-font);
+    color: var(--gold);
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.8);
+    letter-spacing: 2px;
+}
+
+.progress-track {
+    width: 100%;
+    height: 12px;
+    background: #2a1b15;
+    border: 1px solid var(--gold-dim);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+#progress-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #8b5a2b, #d4af37, #8b5a2b);
+    background-size: 200% 100%;
+    animation: shine 2s infinite linear;
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+    transition: width 0.1s linear;
+}
+
+@keyframes shine {
+    0% {
+        background-position: 100% 0;
+    }
+
+    100% {
+        background-position: -100% 0;
+    }
+}

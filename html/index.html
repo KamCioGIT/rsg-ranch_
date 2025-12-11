@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranch System UI</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- BUY ANIMALS MENU -->
+    <div id="buy-menu" class="ranch-ui-container hidden">
+        <button class="close-btn" onclick="closeMenu()">X</button>
+        <div class="ui-header">
+            <h1>Livestock Dealer</h1>
+            <span>Fine animals for sale</span>
+        </div>
+        <div class="ui-content" id="buy-content">
+            <!-- Items injected by JS -->
+            <div class="item-card">
+                <div class="item-title">Hereford Bull</div>
+                <div class="item-price">$8.50</div>
+                <button class="item-btn">Purchase</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SELL ANIMALS MENU -->
+    <div id="sell-menu" class="ranch-ui-container hidden">
+        <button class="close-btn" onclick="closeMenu()">X</button>
+        <div class="ui-header">
+            <h1>Auction House</h1>
+            <span>Sell your livestock</span>
+        </div>
+        <div class="ui-content" id="sell-content">
+            <!-- Items injected by JS -->
+        </div>
+    </div>
+
+    <!-- BOSS MENU -->
+    <!-- LIVESTOCK MENU -->
+    <div id="livestock-menu" class="ranch-ui-container hidden">
+        <button class="close-btn" onclick="closeMenu()">X</button>
+        <div class="ui-header">
+            <h1>My Herd</h1>
+            <span>Manage & Spawn</span>
+        </div>
+        <div class="ui-content" id="livestock-content">
+            <!-- Items injected here -->
+        </div>
+    </div>
+
+    <!-- BOSS MENU -->
+    <div id="boss-menu" class="ranch-ui-container hidden">
+        <button class="close-btn" onclick="closeMenu()">X</button>
+        <div class="ui-header">
+            <h1 id="ranch-name">My Ranch</h1>
+            <span>Ledger & Management</span>
+        </div>
+        <div class="boss-stats">
+            <div class="stat-box">
+                <div>Funds</div>
+                <div id="ranch-funds">$0.00</div>
+            </div>
+            <div class="stat-box">
+                <div>Employees</div>
+                <div id="ranch-employees">0</div>
+            </div>
+            <div class="stat-box">
+                <div>Animals</div>
+                <div id="ranch-animals">0</div>
+            </div>
+        </div>
+        <div class="ui-content">
+            <div class="item-card">
+                <i class="fa-solid fa-money-bill-wave card-icon"></i>
+                <div class="item-title">Withdraw Funds</div>
+                <button class="item-btn" onclick="postAction('withdrawPrompt', {}); closeMenu();">Select</button>
+            </div>
+            <div class="item-card">
+                <i class="fa-solid fa-piggy-bank card-icon"></i>
+                <div class="item-title">Deposit Funds</div>
+                <button class="item-btn" onclick="postAction('depositPrompt', {}); closeMenu();">Select</button>
+            </div>
+            <div class="item-card">
+                <i class="fa-solid fa-user-plus card-icon"></i>
+                <div class="item-title">Hire Staff</div>
+                <button class="item-btn" onclick="postAction('manageStaff', {}); closeMenu();">Select</button>
+            </div>
+            <div class="item-card">
+                <i class="fa-solid fa-user-minus card-icon"></i>
+                <div class="item-title">Fire Staff</div>
+                <button class="item-btn" onclick="postAction('fireStaff', {}); closeMenu();">Select</button>
+            </div>
+            <div class="item-card">
+                <i class="fa-solid fa-user-tie card-icon"></i>
+                <div class="item-title">Promote Staff</div>
+                <button class="item-btn" onclick="postAction('promoteStaff', {}); closeMenu();">Select</button>
+            </div>
+            <div class="item-card">
+                <i class="fa-solid fa-box-open card-icon"></i>
+                <div class="item-title">Ranch Storage</div>
+                <button class="item-btn" onclick="postAction('openStorage', {}); closeMenu();">Open</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATUS MENU -->
+    <div id="status-menu" class="ranch-ui-container hidden" style="width: 30%; height: 50%;">
+        <button class="close-btn" onclick="closeMenu()">X</button>
+        <div class="ui-header">
+            <h1>Animal Status</h1>
+            <span>Vitals & Info</span>
+        </div>
+        <div class="ui-content status-layout" id="status-content">
+            <!-- Injected by JS -->
+        </div>
+    </div>
+
+    <!-- CUSTOM PROGRESS BAR -->
+    <div id="custom-progress-container" class="hidden">
+        <div id="progress-label">Action...</div>
+        <div class="progress-track">
+            <div id="progress-fill"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
