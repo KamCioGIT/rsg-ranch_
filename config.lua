@@ -16,13 +16,13 @@ Config.Growth = {
 }
 
 Config.AnimalProducts = {
-    ['a_c_bull_01'] = { product = 'fertilizer', productionTime = 3600, amount = 1, requiresHealth = 60, requiresHunger = 40, requiresThirst = 40 },
-    ['a_c_cow'] = { product = 'ranch_milk', productionTime = 3600, amount = 1, requiresHealth = 60, requiresHunger = 40, requiresThirst = 40 },
-    ['a_c_pig_01'] = { product = 'fertilizer', productionTime = 3600, amount = 1, requiresHealth = 60, requiresHunger = 40, requiresThirst = 40 },
-    ['a_c_sheep_01'] = { product = 'ranch_wool', productionTime = 7200, amount = 1, requiresHealth = 60, requiresHunger = 40, requiresThirst = 40 },
-    ['a_c_goat_01'] = { product = 'ranch_milk', productionTime = 3600, amount = 1, requiresHealth = 60, requiresHunger = 40, requiresThirst = 40 },
-    ['a_c_chicken_01'] = { product = 'ranch_egg', productionTime = 1800, amount = 1, requiresHealth = 60, requiresHunger = 40, requiresThirst = 40 },
-    ['a_c_rooster_01'] = { product = 'fertilizer', productionTime = 3600, amount = 1, requiresHealth = 60, requiresHunger = 40, requiresThirst = 40 }
+    ['a_c_bull_01'] = { product = 'manure', productionTime = 3600, amount = 1, requiresHealth = 60, requiresHunger = 40, requiresThirst = 40 },
+    ['a_c_cow'] = { product = 'milk', productionTime = 3600, amount = 1, requiresHealth = 60, requiresHunger = 40, requiresThirst = 40 },
+    ['a_c_pig_01'] = { product = 'manure', productionTime = 3600, amount = 1, requiresHealth = 60, requiresHunger = 40, requiresThirst = 40 },
+    ['a_c_sheep_01'] = { product = 'wool', productionTime = 7200, amount = 1, requiresHealth = 60, requiresHunger = 40, requiresThirst = 40 },
+    ['a_c_goat_01'] = { product = 'milk', productionTime = 3600, amount = 1, requiresHealth = 60, requiresHunger = 40, requiresThirst = 40 },
+    ['a_c_chicken_01'] = { product = 'egg', productionTime = 1800, amount = 1, requiresHealth = 60, requiresHunger = 40, requiresThirst = 40 },
+    ['a_c_rooster_01'] = { product = 'manure', productionTime = 3600, amount = 1, requiresHealth = 60, requiresHunger = 40, requiresThirst = 40 }
 }
 
 Config.AnimalsToBuy = {
@@ -49,8 +49,7 @@ Config.BaseSellPrices = {
     ['a_c_sheep_01'] = 90,
     ['a_c_goat_01'] = 85,
     ['a_c_chicken_01'] = 20,
-    ['a_c_rooster_01'] = 25,
-    ['a_c_dog_husky_01'] = 50
+    ['a_c_rooster_01'] = 25
 }
 
 -- Ranch Locations
@@ -173,4 +172,105 @@ Config.BuyPointLocations = {
 }
 
 -- Sale Point Locations (Removed - Merged into Buy Points)
-Config.SalePointLocations = {}
+-- Carcass Map
+Config.CarcassItems = {
+    ['a_c_bull_01'] = 'carcass_bull',
+    ['a_c_cow'] = 'carcass_cow',
+    ['a_c_pig_01'] = 'carcass_pig',
+    ['a_c_sheep_01'] = 'carcass_sheep',
+    ['a_c_goat_01'] = 'carcass_goat',
+    ['a_c_chicken_01'] = 'carcass_chicken',
+    ['a_c_rooster_01'] = 'carcass_rooster'
+}
+
+-- Butchering Rewards
+Config.ButcherRewards = {
+    ['carcass_cow'] = {
+        { item = 'raw_meat', amount = 10 },
+        { item = 'hide_cow_1star', amount = 1 }, -- Assuming 1 star for generic
+        { item = 'milk', amount = 1 } -- Request
+    },
+    ['carcass_bull'] = {
+        { item = 'raw_meat', amount = 12 },
+        { item = 'hide_bull_1star', amount = 1 }
+    },
+    ['carcass_pig'] = {
+        { item = 'raw_meat', amount = 6 },
+        { item = 'skin_pig_1star', amount = 1 }
+    },
+    ['carcass_sheep'] = {
+        { item = 'cooked_meat', amount = 4 }, -- Mutton isn't in default items, using cooked or raw
+        { item = 'wool', amount = 2 }
+    },
+    ['carcass_goat'] = {
+        { item = 'raw_meat', amount = 3 },
+        { item = 'hide_goat_1star', amount = 1 }
+    },
+    ['carcass_chicken'] = {
+        { item = 'raw_meat', amount = 2 },
+        { item = 'feather', amount = 3 },
+        { item = 'egg', amount = 2 } -- Request
+    },
+    ['carcass_rooster'] = {
+        { item = 'raw_meat', amount = 2 },
+        { item = 'feather', amount = 5 }
+    }
+}
+    
+Config.CraftingRecipes = {
+    { 
+        item = 'cheese', 
+        label = 'Cheese', 
+        ingredients = { 
+            { item = 'milk', amount = 1 }
+        },
+        time = 5000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
+    },
+    { 
+        item = 'butter', 
+        label = 'Butter', 
+        ingredients = { 
+            { item = 'milk', amount = 1 } 
+        },
+        time = 4000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
+    },
+    { 
+        item = 'fertilizer', 
+        label = 'Fertilizer', 
+        ingredients = { 
+            { item = 'manure', amount = 1 } 
+        },
+        time = 3000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
+    },
+    { 
+        item = 'animal_feed', 
+        label = 'Animal Feed', 
+        ingredients = { 
+            { item = 'wheat', amount = 1 },
+            { item = 'Corn', amount = 1 } 
+        },
+        time = 3000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
+    }
+}
+
+Config.ButcherProp = 'p_table04x'
+
+-- Add predefined tables here. Format:
+-- { coords = vector4(x, y, z, h) }
+Config.ButcherTables = {
+    { coords = vector4(1415.30, 285.92, 89.25, 24.35) },
+    { coords = vector4(1356.94, -842.45, 70.78, 198.55) },
+    { coords = vector4(-2228.70, 721.07, 122.72, 204.37) },
+    { coords = vector4(-2563.39, 395.30, 148.48, 85.65) },
+    { coords = vector4(-870.72, 331.32, 96.37, 79.34) },
+    { coords = vector4(-2408.72, -2384.87, 61.23, 46.58) },
+}
+

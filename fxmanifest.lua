@@ -13,14 +13,16 @@ shared_scripts {
 
 client_scripts {
     'client/main.lua',
-    'client/animals.lua'
+    'client/animals.lua',
+    'client/butcher.lua'
 }
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
     'server/main.lua',
     'server/animals.lua',
-    'server/growth.lua'
+    'server/growth.lua',
+    'server/butcher.lua'
 }
 
 ui_page 'html/index.html'
@@ -29,8 +31,8 @@ files {
     'html/index.html',
     'html/style.css',
     'html/script.js',
-    -- 'html/assets/*.png',
-    -- 'html/assets/*.jpg'
+    'html/assets/*.png',
+    'html/assets/*.jpg'
 }
 
 dependencies {

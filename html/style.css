@@ -362,3 +362,238 @@ body {
         background-position: -100% 0;
     }
 }
+
+/* CRAFTING MENU SPECIFIC (DARK LUXURY ELEGANCE) */
+#crafting-menu {
+    background: radial-gradient(circle at center, #1b1b1b 0%, #000000 100%);
+    border: 3px solid #d4af37;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), inset 0 0 100px rgba(0, 0, 0, 0.8);
+    color: var(--text-light);
+    width: 65%;
+    /* Slightly narrower for elegance */
+    padding: 0;
+    overflow: hidden;
+}
+
+#crafting-menu .ui-header {
+    background: linear-gradient(to bottom, rgba(212, 175, 55, 0.1), transparent);
+    padding: 2rem 0;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    margin-bottom: 0;
+}
+
+#crafting-menu .ui-header h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 3rem;
+    color: #d4af37;
+    letter-spacing: 8px;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+#crafting-menu .ui-header span {
+    font-family: 'Montserrat', sans-serif;
+    /* Clean contrast */
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    font-size: 0.9rem;
+    color: #888;
+}
+
+/* Close Button Override */
+#crafting-menu .close-btn {
+    color: #d4af37;
+    border-color: #d4af37;
+    top: 25px;
+    right: 30px;
+}
+
+#crafting-menu .close-btn:hover {
+    background: #d4af37;
+    color: #000;
+}
+
+/* GRID LAYOUT */
+.crafting-grid-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 3rem;
+    overflow-y: auto;
+    height: 100%;
+}
+
+/* CARD STYLING */
+.crafting-card {
+    background: rgba(20, 20, 20, 0.8);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    height: auto;
+    min-height: 450px;
+    /* Ensure consistent minimum size */
+}
+
+.crafting-card:hover {
+    border-color: #d4af37;
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.15);
+    background: rgba(30, 30, 30, 0.9);
+    transform: translateY(-5px);
+}
+
+/* Header Line */
+.card-header-elegant {
+    padding: 1rem;
+    text-align: center;
+    background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.1), transparent);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.card-header-elegant span {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    color: #f0e68c;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Body */
+.card-body-elegant {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    gap: 1.5rem;
+}
+
+.crafting-icon-elegant {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+    transition: transform 0.3s;
+}
+
+.crafting-card:hover .crafting-icon-elegant {
+    transform: scale(1.1);
+}
+
+.crafting-icon-elegant img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* Ingredients List */
+.ingredients-list {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.req-label {
+    font-size: 0.7rem;
+    color: #666;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.ingredient-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Special Elite', monospace;
+    font-size: 0.9rem;
+    color: #aaa;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+}
+
+.ingredient-item:last-child {
+    border-bottom: none;
+}
+
+.ing-amount {
+    color: #d4af37;
+    font-weight: bold;
+}
+
+/* Footer & Button */
+.card-footer-elegant {
+    padding: 1.5rem;
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.qty-btn {
+    background: transparent;
+    border: 1px solid #d4af37;
+    color: #d4af37;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-weight: bold;
+}
+
+.qty-btn:hover {
+    background: rgba(212, 175, 55, 0.2);
+}
+
+.qty-input {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    color: #f0e68c;
+    width: 60px;
+    text-align: center;
+    font-family: 'Special Elite', monospace;
+    font-size: 1.1rem;
+    padding: 5px;
+}
+
+.crafting-btn-elegant {
+    width: 100%;
+    padding: 1rem;
+    background: transparent;
+    border: 1px solid #d4af37;
+    color: #d4af37;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.crafting-btn-elegant:hover {
+    background: #d4af37;
+    color: #000;
+    box-shadow: 0 0 15px #d4af37;
+}

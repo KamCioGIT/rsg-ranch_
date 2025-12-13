@@ -88,12 +88,13 @@ function SetupAnimalTarget(ped, animalId, animalData)
             onSelect = function()
                 Citizen.CreateThread(function()
                     local playerPed = PlayerPedId()
-                    ClearPedTasksImmediately(playerPed) -- Force clear
+                    ClearPedTasksImmediately(playerPed)
                     SetCurrentPedWeapon(playerPed, GetHashKey('WEAPON_UNARMED'), true)
                     Wait(200)
-                    
-                    -- Hand Feeding / Weeding Animation (Reliable Fallback)
-                    TaskStartScenarioInPlace(playerPed, GetHashKey('WORLD_HUMAN_FARMER_WEEDING'), -1, true, false, false, false)
+
+                    -- Use Native Scenario for Pouring Feed (Detailed and reliable)
+                    -- WORLD_HUMAN_BUCKET_POUR_LOW creates a bucket and pours from it
+                    TaskStartScenarioInPlace(playerPed, GetHashKey('WORLD_HUMAN_BUCKET_POUR_LOW'), -1, true, false, false, false)
                     
                     -- Custom UI
                     SendNUIMessage({
@@ -308,4 +309,59 @@ AddEventHandler('onResourceStop', function(resourceName)
             DeleteEntity(ped)
         end
     end
+end)
+
+-- Debug Command to check Animation Dictionaries
+RegisterCommand('checkanim', function()
+    local animDicts = {
+        -- Confirmed Baseline
+        "amb_work@world_human_farmer_weeding@male_a@idle_a",
+        
+        -- New Candidates to Test
+        "amb_work@world_human_farmer_rake@male_a@idle_a",
+        "amb_work@world_human_grain_sack@male_a@idle_a", 
+        "amb_work@world_human_hay_bale@male_a@idle_a",
+        "mech_pickup@plant@farming",
+        "amb_work@prop_human_lay_feed@male_a@idle_a",  
+        "amb_camp@world_camp_jack_es_feeding_horse@idle_a",
+        
+        -- Bucket / Water Related
+        "amb_work@world_human_bucket_pour@male_a@idle_a",
+        "amb_rest@world_human_wash_face_bucket@male_a@idle_a",
+        
+        -- Interaction / Pickup
+        "mech_pickup@p_bale_hay_01x",
+        "mech_inventory@item@fall",
+        
+        -- General Work
+        "amb_work@world_human_broom@male_a@idle_a",
+        "amb_work@world_human_shovel_coal@male_a@idle_a",
+        
+        -- Script specific (might be invalid but worth a shot if updated)
+        "script_re@fertilizer@pour", 
+        "script_common@bucket@pour",
+        "script_common@bucket_pour"
+    }
+
+    print("---[ Checking Animation Dictionaries ]---")
+    
+    Citizen.CreateThread(function()
+        for _, dict in ipairs(animDicts) do
+            if not HasAnimDictLoaded(dict) then
+                RequestAnimDict(dict)
+                local timeout = 0
+                while not HasAnimDictLoaded(dict) and timeout < 50 do -- 0.5s timeout per anim to check existence
+                    Wait(10)
+                    timeout = timeout + 1
+                end
+            end
+            
+            if HasAnimDictLoaded(dict) then
+                print("[VALID]   " .. dict)
+            else
+                print("[INVALID] " .. dict)
+            end
+        end
+        print("---[ Done ]---")
+    end)
 end)

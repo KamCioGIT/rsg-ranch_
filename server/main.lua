@@ -126,6 +126,12 @@ RegisterNetEvent('rsg-ranch:server:sellItem', function(data)
 
         Player.Functions.AddMoney('cash', playerShare)
         
+        -- Carcass Logic
+        local carcassItem = Config.CarcassItems[model]
+        if carcassItem then
+            Player.Functions.AddItem(carcassItem, 1)
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Received Carcass', description = 'You received a '..model..' carcass', type = 'success'})
+        end
 
         oxmysql:execute('INSERT INTO rsg_ranch_funds (ranchid, funds) VALUES (?, ?) ON DUPLICATE KEY UPDATE funds = funds + ?', {ranchId, ranchShare, ranchShare})
         
@@ -270,14 +276,21 @@ RegisterNetEvent('rsg-ranch:server:openStorage', function()
     if not Player then return end
     
     local jobName = Player.PlayerData.job.name
+    local grade = Player.PlayerData.job.grade.level
+
+    if grade < 1 then
+        TriggerClientEvent('ox_lib:notify', src, {title = 'Access Denied', description = 'Only Manager and Boss have access to storage.', type = 'error'})
+        return
+    end
+
     local stashName = 'ranch_' .. jobName
     
     if GetResourceState('ox_inventory') == 'started' then
         exports.ox_inventory:forceOpenInventory(src, 'stash', stashName)
     else
         -- Fallback for rsg-inventory (triggered from server to ensure sync)
-        TriggerClientEvent("rsg-inventory:client:SetCurrentStash", src, stashName)
-        TriggerClientEvent("inventory:client:OpenInventory", src, "stash", stashName, {
+        -- Fallback for rsg-inventory
+        exports['rsg-inventory']:OpenInventory(src, stashName, {
             maxweight = 4000000,
             slots = 50,
         })

@@ -8,6 +8,8 @@ const buyContent = document.getElementById('buy-content');
 const sellContent = document.getElementById('sell-content');
 const livestockContent = document.getElementById('livestock-content');
 const statusContent = document.getElementById('status-content');
+const craftingContent = document.getElementById('crafting-content');
+const craftingMenu = document.getElementById('crafting-menu');
 
 // Listen for messages from Lua
 window.addEventListener('message', function (event) {
@@ -25,6 +27,8 @@ window.addEventListener('message', function (event) {
         openAnimalStatus(data.status);
     } else if (data.action === "openProgressBar") {
         startProgressBar(data.duration, data.label);
+    } else if (data.action === "openCrafting") {
+        openCraftingMenu(data.recipes);
     } else if (data.action === "close") {
         closeMenu();
     }
@@ -36,6 +40,7 @@ function hideAll() {
     bossMenu.classList.add('hidden');
     if (livestockMenu) livestockMenu.classList.add('hidden');
     if (statusMenu) statusMenu.classList.add('hidden');
+    if (craftingMenu) craftingMenu.classList.add('hidden');
     document.getElementById('custom-progress-container').classList.add('hidden');
 }
 
@@ -64,10 +69,23 @@ function openBuyMenu(items) {
 }
 
 function handleImageError(img) {
+    // Hide the broken image entirely to keep UI clean, 
+    // or replace with a generic subtle texture if desired. 
+    // Do NOT replace with a paw icon.
     img.style.display = 'none';
-    img.parentElement.innerHTML = '<i class="fa-solid fa-paw" style="font-size:32px;opacity:0.5;"></i>';
-}
 
+    // Check if parent is a crafting icon container and hide it too if empty
+    if (img.parentElement.classList.contains('crafting-icon-elegant') ||
+        img.parentElement.classList.contains('img-container')) {
+        // Create a transparent placeholder or just leave empty
+        // Adding a sophisticated border or text could work, but empty is cleanest for now
+        let placeholder = document.createElement('i');
+        placeholder.className = "fa-solid fa-box"; // Use a generic box instead of paw
+        placeholder.style.fontSize = "2rem";
+        placeholder.style.color = "#444";
+        img.parentElement.appendChild(placeholder);
+    }
+}
 function openSellMenu(items) {
     hideAll();
     sellContent.innerHTML = "";
@@ -293,4 +311,91 @@ function startProgressBar(duration, label) {
     }
 
     window.requestAnimationFrame(step);
+    window.requestAnimationFrame(step);
+}
+
+function openCraftingMenu(recipes) {
+    hideAll();
+    craftingContent.innerHTML = "";
+
+    // Switch container to grid layout for elegant cards
+    craftingContent.className = "crafting-grid-layout";
+
+    recipes.forEach(recipe => {
+        const div = document.createElement('div');
+        div.className = "crafting-card";
+
+        let ingredientsHtml = "";
+        recipe.ingredients.forEach(ing => {
+            // Using logic from Lua that passes 'label'
+            ingredientsHtml += `
+            <div class="ingredient-item">
+                <span class="ing-amount">${ing.amount}x</span>
+                <span class="ing-name">${ing.label}</span>
+            </div>`;
+        });
+
+        div.innerHTML = `
+            <div class="card-header-elegant">
+                <span>${recipe.label}</span>
+            </div>
+            <div class="card-body-elegant">
+                <div class="crafting-icon-elegant">
+                    <img src="./assets/${recipe.item}.png" alt="${recipe.label}" onerror="handleImageError(this)">
+                </div>
+                <div class="ingredients-list">
+                    <div class="req-label">REQUIRED</div>
+                    ${ingredientsHtml}
+                </div>
+            </div>
+            <div class="card-footer-elegant">
+                <div class="quantity-selector">
+                    <button class="qty-btn" onclick="adjustQty('${recipe.item}', -1)">-</button>
+                    <input type="number" id="qty-${recipe.item}" class="qty-input" value="1" min="1" max="100">
+                    <button class="qty-btn" onclick="adjustQty('${recipe.item}', 1)">+</button>
+                </div>
+                <button class="crafting-btn-elegant" onclick="craftItem('${recipe.item}')">
+                    <i class="fa-solid fa-hammer"></i> CRAFT
+                </button>
+            </div>
+        `;
+        craftingContent.appendChild(div);
+    });
+
+    craftingMenu.classList.remove('hidden');
+}
+
+function categoryClick(id) {
+    // Placeholder if needed logic
+}
+
+function adjustQty(item, delta) {
+    const input = document.getElementById(`qty-${item}`);
+    if (input) {
+        let val = parseInt(input.value) || 1;
+        val += delta;
+        if (val < 1) val = 1;
+        if (val > 100) val = 100;
+        input.value = val;
+    }
+}
+
+function craftItem(item) {
+    const input = document.getElementById(`qty-${item}`);
+    const amount = input ? (parseInt(input.value) || 1) : 1;
+
+    console.log("Crafting item:", item, "Amount:", amount);
+
+    fetch(`https://${GetParentResourceName()}/craftItem`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: JSON.stringify({
+            item: item,
+            amount: amount
+        })
+    });
+
+    closeMenu();
 }
