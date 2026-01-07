@@ -224,13 +224,20 @@ RegisterNUICallback('sellItem', function(data, cb)
 end)
 
 RegisterNUICallback('spawnAnimals', function(data, cb)
-    -- print('[Ranch System] DEBUG: NUI spawnAnimals triggered')
     TriggerServerEvent('rsg-ranch:server:spawnRanchAnimals')
+    cb('ok')
+end)
+
+RegisterNUICallback('craftItem', function(data, cb)
+    local item = data.item
+    local amount = data.amount
+    TriggerServerEvent('rsg-ranch:server:craftItem', item, amount)
     cb('ok')
 end)
 
 RegisterNUICallback('withdrawPrompt', function(data, cb)
     SetNuiFocus(false, false)
+    SendNUIMessage({ action = "close" })
     local input = lib.inputDialog('Withdraw Funds', {'Amount'})
     if input and input[1] then
         TriggerServerEvent('rsg-ranch:server:withdrawFunds', tonumber(input[1]))
@@ -240,10 +247,40 @@ end)
 
 RegisterNUICallback('depositPrompt', function(data, cb)
     SetNuiFocus(false, false)
+    SendNUIMessage({ action = "close" })
     local input = lib.inputDialog('Deposit Funds', {'Amount'})
     if input and input[1] then
         TriggerServerEvent('rsg-ranch:server:depositFunds', tonumber(input[1]))
     end
+    cb('ok')
+end)
+
+RegisterNUICallback('manageStaff', function(data, cb)
+    RSGCore.Functions.TriggerCallback('rsg-ranch:server:getNearbyPlayers', function(players)
+        SetNuiFocus(true, true) -- Ensure cursor stays
+        SendNUIMessage({
+            action = "openHireMenu",
+            players = players
+        })
+    end)
+    cb('ok')
+end)
+
+RegisterNUICallback('confirmHire', function(data, cb)
+    TriggerServerEvent('rsg-ranch:server:hireEmployee', data.id)
+    cb('ok')
+end)
+
+RegisterNUICallback('confirmPromote', function(data, cb)
+    TriggerServerEvent('rsg-ranch:server:promoteEmployee', data.id, data.grade)
+    SetTimeout(500, function()
+        RSGCore.Functions.TriggerCallback('rsg-ranch:server:getEmployees', function(employees)
+            SendNUIMessage({
+                action = "openEmployeeList",
+                employees = employees
+            })
+        end)
+    end)
     cb('ok')
 end)
 
@@ -268,35 +305,210 @@ RegisterNUICallback('spawnSpecific', function(data, cb)
     cb('ok')
 end)
 
-RegisterNUICallback('manageStaff', function(data, cb)
-    SetNuiFocus(false, false)
-    local input = lib.inputDialog('Hire New Staff', {'Player ID'})
-    if input and input[1] then
-        TriggerServerEvent('rsg-ranch:server:hireEmployee', tonumber(input[1]))
+
+-- RANCH TABLE LOGIC
+local placedObjects = {}
+
+RegisterNetEvent('rsg-ranch:client:syncObjects', function(objects)
+    -- Cleanup old
+    for _, obj in pairs(placedObjects) do
+        if DoesEntityExist(obj) then DeleteEntity(obj) end
     end
+    placedObjects = {}
+
+    for _, data in ipairs(objects) do
+        local coords = json.decode(data.coords)
+        local model = GetHashKey(data.model)
+        
+        RequestModel(model)
+        while not HasModelLoaded(model) do Wait(10) end
+        
+        local obj = CreateObject(model, coords.x, coords.y, coords.z, false, false, false)
+        SetEntityHeading(obj, coords.w) -- or heading if w stored
+        FreezeEntityPosition(obj, true)
+        PlaceObjectOnGroundProperly(obj)
+        
+        table.insert(placedObjects, obj)
+        
+        -- Add Target
+        exports.ox_target:addLocalEntity(obj, {
+            {
+                name = 'ranch_crafting',
+                icon = 'fa-solid fa-hammer',
+                label = 'Open Crafting',
+                onSelect = function()
+                     if not HasAnyRanchJob() then
+                         lib.notify({type='error', description='Only ranchers can use this.'})
+                         return
+                     end
+                     -- Retrieve recipes and open UI
+                     SetNuiFocus(true, true)
+                     SendNUIMessage({
+                         action = "openCrafting",
+                         recipes = Config.CraftingRecipes
+                     })
+                end
+            },
+            {
+                name = 'remove_ranch_table',
+                icon = 'fa-solid fa-trash',
+                label = 'Remove Table',
+                onSelect = function()
+                    local input = lib.inputDialog('Remove Table?', {
+                        {type = 'checkbox', label = 'Confirm Removal', checked = false}
+                    })
+                    if input and input[1] then
+                        TriggerServerEvent('rsg-ranch:server:removeRanchTable')
+                    end
+                end,
+                canInteract = function()
+                    local PlayerData = RSGCore.Functions.GetPlayerData()
+                    return PlayerData.job.grade.level >= 3 -- Manager/Boss
+                end
+            }
+        })
+    end
+end)
+
+RegisterNUICallback('placeTable', function(data, cb)
+    SetNuiFocus(false, false)
+    SendNUIMessage({ action = "close" })
+    
+    RSGCore.Functions.TriggerCallback('rsg-ranch:server:hasTable', function(hasTable)
+        if hasTable then
+            lib.notify({type='error', description='Your ranch already has a table.'})
+            return
+        end
+        
+        -- Start Placement Mode
+        local modelHash = GetHashKey('p_table04x')
+        RequestModel(modelHash)
+        while not HasModelLoaded(modelHash) do Wait(10) end
+        
+        local vehicle = CreateObject(modelHash, 0, 0, 0, false, false, false)
+        SetEntityAlpha(vehicle, 150, false)
+        SetEntityCollision(vehicle, false, false)
+        
+        local placing = true
+        
+        CreateThread(function()
+            while placing do
+                Wait(0)
+                local hit, coords = RayCastGamePlayCamera(20.0)
+                
+                SetEntityCoords(vehicle, coords.x, coords.y, coords.z)
+                PlaceObjectOnGroundProperly(vehicle)
+                
+                lib.showTextUI('[E] Place  [Backspace] Cancel')
+                
+                if IsControlJustPressed(0, 0xCEFD9220) then -- 'E' (INPUT_CONTEXT usually, checking correct hash or use key mapping)
+                    -- For RedM specifically: 0xCEFD9220 is 'E' equivalent often? Let's use simpler IsControlJustPressed(0, 0xCEFD9220) (Interact?)
+                    -- Wait, RedM inputs are specific. 0xCEFD9220 is 'E' (Context). Or 0xD9D0E1C0 (Jump). 
+                    -- Let's rely on standard: 0xCEFD9220 might work. Or 0x27D1C284 (INPUT_CONTEXT_A).
+                    -- Let's try lib.showTextUI instruction.
+                end
+
+                if IsControlJustPressed(0, 0xCEFD9220) then -- E
+                    placing = false
+                    local finalCoords = GetEntityCoords(vehicle)
+                    local heading = GetEntityHeading(vehicle)
+                    DeleteEntity(vehicle)
+                    lib.hideTextUI()
+                    
+                    TriggerServerEvent('rsg-ranch:server:placeRanchTable', {
+                        model = 'p_table04x',
+                        coords = {x=finalCoords.x, y=finalCoords.y, z=finalCoords.z, w=heading}
+                    })
+                end
+                
+                if IsControlJustPressed(0, 0x156F7119) then -- Backspace / Cancel
+                    placing = false
+                    DeleteEntity(vehicle)
+                    lib.hideTextUI()
+                end 
+            end
+        end)
+    end)
     cb('ok')
 end)
 
-RegisterNUICallback('fireStaff', function(data, cb)
-    SetNuiFocus(false, false)
-    local input = lib.inputDialog('Fire Staff', {'Player ID'})
-    if input and input[1] then
-        TriggerServerEvent('rsg-ranch:server:fireEmployee', tonumber(input[1]))
+function RayCastGamePlayCamera(distance)
+    local cameraRotation = GetGameplayCamRot()
+    local cameraCoord = GetGameplayCamCoord()
+    local direction = RotationToDirection(cameraRotation)
+    local destination = {
+        x = cameraCoord.x + direction.x * distance,
+        y = cameraCoord.y + direction.y * distance,
+        z = cameraCoord.z + direction.z * distance
+    }
+    local a, b, c, d, e = GetShapeTestResult(StartShapeTestRay(cameraCoord.x, cameraCoord.y, cameraCoord.z, destination.x, destination.y, destination.z, -1, PlayerPedId(), 0))
+    return b, c, e
+end
+
+function RotationToDirection(rotation)
+    local adjustedRotation = {
+        x = (math.pi / 180) * rotation.x,
+        y = (math.pi / 180) * rotation.y,
+        z = (math.pi / 180) * rotation.z
+    }
+    local direction = {
+        x = -math.sin(adjustedRotation.z) * math.abs(math.cos(adjustedRotation.x)),
+        y = math.cos(adjustedRotation.z) * math.abs(math.cos(adjustedRotation.x)),
+        z = math.sin(adjustedRotation.x)
+    }
+    return direction
+end
+
+AddEventHandler('onResourceStop', function(resourceName)
+    if (GetCurrentResourceName() ~= resourceName) then return end
+    for _, ped in ipairs(spawnedPeds) do
+        if DoesEntityExist(ped) then
+            DeleteEntity(ped)
+        end
     end
+    for _, obj in pairs(placedObjects) do
+        if DoesEntityExist(obj) then DeleteEntity(obj) end
+    end
+end)
+
+RegisterNetEvent('RSGCore:Client:OnPlayerLoaded', function()
+    TriggerServerEvent('rsg-ranch:server:loadRanchObjects')
+end)
+
+
+
+RegisterNUICallback('manageEmployees', function(data, cb)
+    print('[Ranch System] manageEmployees NUI triggered, requesting server data...')
+    RSGCore.Functions.TriggerCallback('rsg-ranch:server:getEmployees', function(employees)
+        print('[Ranch System] Received employee list: ' .. (employees and #employees or 'nil'))
+        SetNuiFocus(true, true)
+        SendNUIMessage({
+            action = "openEmployeeList",
+            employees = employees
+        })
+    end)
     cb('ok')
 end)
 
-RegisterNUICallback('promoteStaff', function(data, cb)
-    SetNuiFocus(false, false)
-    local input = lib.inputDialog('Promote Staff', {'Player ID', 'Grade (0-2)'})
-    if input and input[1] and input[2] then
-        TriggerServerEvent('rsg-ranch:server:promoteEmployee', tonumber(input[1]), tonumber(input[2]))
-    end
+RegisterNUICallback('confirmFire', function(data, cb)
+    TriggerServerEvent('rsg-ranch:server:fireEmployee', data)
+    -- Refresh list after short delay
+    SetTimeout(500, function()
+        RSGCore.Functions.TriggerCallback('rsg-ranch:server:getEmployees', function(employees)
+            SendNUIMessage({
+                action = "openEmployeeList",
+                employees = employees
+            })
+        end)
+    end)
     cb('ok')
 end)
+
+
 
 RegisterNUICallback('openStorage', function(data, cb)
     SetNuiFocus(false, false)
+    SendNUIMessage({ action = "close" })
     Wait(100)
     TriggerServerEvent('rsg-ranch:server:openStorage')
     cb('ok')

@@ -31,8 +31,156 @@ window.addEventListener('message', function (event) {
         openCraftingMenu(data.recipes);
     } else if (data.action === "close") {
         closeMenu();
+    } else if (data.action === "openHireMenu") {
+        openHireMenu(data.players);
+    } else if (data.action === "openEmployeeList") {
+        openEmployeeList(data.employees);
     }
 });
+
+function openHireMenu(players) {
+    const listMenu = document.getElementById('employee-list-menu'); // Reuse same container structure if possible or create new? 
+    // Let's create a dedicated one or repurpose. Reusing is easier, just changing title.
+
+    // Check if we have a dedicated hire menu container, if not let's dynamically change the existing list menu
+    // Actually better to have separate ID to avoid confusion
+    let hireMenu = document.getElementById('hire-player-menu');
+    let container = document.getElementById('hire-player-content');
+
+    // Hide all
+    document.querySelectorAll('.ranch-ui-container, .crafting-ui-container, .hidden').forEach(el => {
+        if (!el.classList.contains('hidden')) el.classList.add('hidden');
+    });
+
+    hireMenu.classList.remove('hidden');
+    hireMenu.classList.add('ranch-ui-container');
+
+    container.innerHTML = '';
+
+    if (!players || players.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color:#aaa; padding:20px;">No nearby players found.</div>';
+        return;
+    }
+
+    players.forEach(p => {
+        const row = document.createElement('div');
+        row.className = 'employee-row';
+        row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:15px; background:rgba(0,0,0,0.3); border:1px solid var(--gold-dim); border-radius:4px; margin-bottom:10px;';
+
+        row.innerHTML = `
+            <div style="display:flex; flex-direction:column;">
+                <span class="item-title" style="font-size:1.2rem;">${p.name}</span>
+                <span style="font-size:0.9rem; color:#aaa;">ID: ${p.id}</span>
+            </div>
+            <button class="item-btn" style="min-width:80px;" onclick="hirePlayer(${p.id})">HIRE</button>
+        `;
+        container.appendChild(row);
+    });
+}
+
+function hirePlayer(id) {
+    postAction('confirmHire', { id: id });
+    closeMenu(); // Close after hiring
+}
+
+function hideAll() {
+    const ids = [
+        'buy-menu', 'sell-menu', 'boss-menu', 'livestock-menu',
+        'status-menu', 'crafting-menu', 'employee-list-menu',
+        'hire-player-menu', 'custom-progress-container'
+    ];
+
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    });
+}
+
+function openEmployeeList(employees) {
+    try {
+        console.log("JS: Rendering employee list...", employees);
+        hideAll();
+
+        const listMenu = document.getElementById('employee-list-menu');
+        const container = document.getElementById('employee-list-content');
+
+        if (!listMenu) {
+            console.error("JS: employee-list-menu element not found!");
+            return;
+        }
+        if (!container) {
+            console.error("JS: employee-list-content element not found!");
+            return;
+        }
+
+        // Show this menu
+        listMenu.classList.remove('hidden');
+
+        container.innerHTML = '';
+
+        // Add HIRE Button
+        const hireBtnContainer = document.createElement('div');
+        hireBtnContainer.style.textAlign = 'right';
+        hireBtnContainer.style.marginBottom = '10px';
+        hireBtnContainer.innerHTML = `<button class="item-btn" style="width:auto; padding:5px 15px;" onclick="postAction('manageStaff', {})">+ HIRE NEW EMPLOYEE</button>`;
+        container.appendChild(hireBtnContainer);
+
+        if (!employees || employees.length === 0) {
+            container.innerHTML += '<div style="text-align:center; color:#aaa; padding:20px;">No employees found.</div>';
+            return;
+        }
+
+        employees.forEach(emp => {
+            const row = document.createElement('div');
+            row.className = 'employee-row';
+            row.style.display = 'flex';
+            row.style.justifyContent = 'space-between';
+            row.style.alignItems = 'center';
+            row.style.padding = '15px';
+            row.style.background = 'rgba(0,0,0,0.3)';
+            row.style.border = '1px solid var(--gold-dim)';
+            row.style.borderRadius = '4px';
+            row.style.marginBottom = '10px';
+
+            const statusColor = emp.online ? '#4caf50' : '#f44336';
+
+            row.innerHTML = `
+                <div style="display:flex; flex-direction:column;">
+                    <span class="item-title" style="font-size:1.2rem;">${emp.name}</span>
+                    <span style="font-size:0.9rem; color:#aaa;">Grade: ${emp.grade} (${emp.gradeLevel})</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                     <span style="color:${statusColor}; font-size:0.9rem; margin-right:10px;"><i class="fa-solid fa-circle" style="font-size:0.6rem;"></i> ${emp.online ? 'Online' : 'Offline'}</span>
+                     
+                     <button class="item-btn" style="background:none; border:1px solid var(--gold); color:var(--gold); min-width:80px;" 
+                     onclick="promoteEmployee('${emp.citizenid}', ${emp.gradeLevel})">PROMOTE</button>
+
+                     <button class="item-btn" style="background:none; border:1px solid #d32f2f; color:#d32f2f; min-width:80px;" 
+                     onclick="fireEmployee('${emp.citizenid}', '${emp.name}')">FIRE</button>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+    } catch (err) {
+        console.error("JS Error inside openEmployeeList:", err);
+    }
+}
+
+function promoteEmployee(citizenid, currentGrade) {
+    // Current grades: 0, 1, 2, 3, 4
+    if (currentGrade >= 4) {
+        // Can't promote Boss further
+        return;
+    }
+    let newGrade = currentGrade + 1;
+    postAction('confirmPromote', { player: true, id: citizenid, grade: newGrade });
+}
+
+
+function fireEmployee(citizenid, name) {
+    // We can add a simple confirmation if needed, but for now direct fire
+    postAction('confirmFire', { citizenid: citizenid });
+}
 
 function hideAll() {
     buyMenu.classList.add('hidden');
@@ -41,6 +189,14 @@ function hideAll() {
     if (livestockMenu) livestockMenu.classList.add('hidden');
     if (statusMenu) statusMenu.classList.add('hidden');
     if (craftingMenu) craftingMenu.classList.add('hidden');
+
+    // Employee Menus
+    const empMenu = document.getElementById('employee-list-menu');
+    if (empMenu) empMenu.classList.add('hidden');
+
+    const hireMenu = document.getElementById('hire-player-menu');
+    if (hireMenu) hireMenu.classList.add('hidden');
+
     document.getElementById('custom-progress-container').classList.add('hidden');
 }
 
@@ -57,8 +213,8 @@ function openBuyMenu(items) {
             </div>
             <div class="item-title">${item.label}</div>
             <div class="item-price">$${item.price} each</div>
-            <div style="margin: 5px 0;">
-                <input type="number" id="qty-${item.model}" value="1" min="1" max="10" style="width: 50px; text-align: center; background: rgba(0,0,0,0.1); border: 1px solid #5c4033; color: inherit; font-family: inherit;">
+            <div style="margin: 10px 0;">
+                <input type="number" id="qty-${item.model}" class="qty-input-field" value="1" min="1" max="10">
             </div>
             <button class="item-btn" onclick="buyItem('${item.model}', ${item.price}, document.getElementById('qty-${item.model}').value)">Purchase</button>
         `;
@@ -165,19 +321,18 @@ function openBossMenu(data) {
     document.getElementById('ranch-animals').innerText = data.animals;
 
     // Add Manage/Spawn Animals Button
-    let spawnBtn = document.getElementById('manage-herd-btn');
-    if (!spawnBtn) {
-        spawnBtn = document.createElement('button');
-        spawnBtn.id = 'manage-herd-btn';
-        spawnBtn.className = 'menu-btn';
-        spawnBtn.style.marginTop = '20px';
-        spawnBtn.style.width = '100%';
-        spawnBtn.style.fontWeight = 'bold';
-        spawnBtn.innerHTML = 'MANAGE / SPAWN HERD';
-        spawnBtn.onclick = function () {
-            postAction('getLivestock', {});
-        };
-        bossMenu.querySelector('.ui-content').appendChild(spawnBtn);
+    // Add Manage/Spawn Animals Card
+    let spawnCard = document.getElementById('manage-herd-card');
+    if (!spawnCard) {
+        spawnCard = document.createElement('div');
+        spawnCard.id = 'manage-herd-card';
+        spawnCard.className = 'item-card';
+        spawnCard.innerHTML = `
+            <i class="fa-solid fa-cow card-icon"></i>
+            <div class="item-title">Manage Herd</div>
+            <button class="item-btn" onclick="postAction('getLivestock', {})">Open</button>
+        `;
+        bossMenu.querySelector('.ui-content').appendChild(spawnCard);
     }
 
     bossMenu.classList.remove('hidden');
@@ -316,73 +471,133 @@ function startProgressBar(duration, label) {
 
 function openCraftingMenu(recipes) {
     hideAll();
-    craftingContent.innerHTML = "";
 
-    // Switch container to grid layout for elegant cards
-    craftingContent.className = "crafting-grid-layout";
+    window.currentRecipes = recipes;
+    window.selectedRecipe = null;
 
-    recipes.forEach(recipe => {
-        const div = document.createElement('div');
-        div.className = "crafting-card";
+    const listContainer = document.getElementById('crafting-list-container');
+    const detailsPanel = document.getElementById('crafting-details-content');
 
-        let ingredientsHtml = "";
-        recipe.ingredients.forEach(ing => {
-            // Using logic from Lua that passes 'label'
-            ingredientsHtml += `
-            <div class="ingredient-item">
-                <span class="ing-amount">${ing.amount}x</span>
-                <span class="ing-name">${ing.label}</span>
-            </div>`;
-        });
+    if (!listContainer || !detailsPanel) {
+        console.error('Crafting containers not found');
+        return;
+    }
 
-        div.innerHTML = `
-            <div class="card-header-elegant">
-                <span>${recipe.label}</span>
-            </div>
-            <div class="card-body-elegant">
-                <div class="crafting-icon-elegant">
-                    <img src="./assets/${recipe.item}.png" alt="${recipe.label}" onerror="handleImageError(this)">
-                </div>
-                <div class="ingredients-list">
-                    <div class="req-label">REQUIRED</div>
-                    ${ingredientsHtml}
-                </div>
-            </div>
-            <div class="card-footer-elegant">
-                <div class="quantity-selector">
-                    <button class="qty-btn" onclick="adjustQty('${recipe.item}', -1)">-</button>
-                    <input type="number" id="qty-${recipe.item}" class="qty-input" value="1" min="1" max="100">
-                    <button class="qty-btn" onclick="adjustQty('${recipe.item}', 1)">+</button>
-                </div>
-                <button class="crafting-btn-elegant" onclick="craftItem('${recipe.item}')">
-                    <i class="fa-solid fa-hammer"></i> CRAFT
-                </button>
-            </div>
+    listContainer.innerHTML = '';
+    detailsPanel.innerHTML = '<div class="details-placeholder">Select a recipe</div>';
+
+    // Sidebar list items
+    recipes.forEach((recipe, index) => {
+        const item = document.createElement('div');
+        item.className = 'crafting-list-item';
+        item.dataset.index = index;
+        item.innerHTML = `
+            <img src="./assets/${recipe.item}.png" alt="${recipe.label}" onerror="this.src='nui://rsg-inventory/html/images/${recipe.item}.png';">
+            <span>${recipe.label}</span>
         `;
-        craftingContent.appendChild(div);
+        item.onclick = () => selectRecipe(index);
+        listContainer.appendChild(item);
     });
+
+    // Select first item by default
+    if (recipes.length > 0) {
+        selectRecipe(0);
+    }
 
     craftingMenu.classList.remove('hidden');
 }
 
-function categoryClick(id) {
-    // Placeholder if needed logic
+function selectRecipe(index) {
+    const recipes = window.currentRecipes;
+    if (!recipes || !recipes[index]) return;
+
+    const recipe = recipes[index];
+    window.selectedRecipe = recipe;
+    window.selectedQuantity = 1;
+
+    // Update active state in list
+    document.querySelectorAll('.crafting-list-item').forEach((el, i) => {
+        el.classList.toggle('active', i === index);
+    });
+
+    const detailsPanel = document.getElementById('crafting-details-content');
+    if (!detailsPanel) return;
+
+    const baseTime = recipe.time || 5000;
+
+    // Build ingredients HTML
+    let ingredientsHtml = '';
+    recipe.ingredients.forEach(ing => {
+        const label = ing.label || ing.item;
+        ingredientsHtml += `
+            <div class="ingredient-row">
+                <span class="ing-qty" data-base="${ing.amount}">${ing.amount}x</span>
+                <span class="ing-name">${label}</span>
+            </div>
+        `;
+    });
+
+    detailsPanel.innerHTML = `
+        <div class="details-content">
+            <div class="details-title">${recipe.label}</div>
+            <div class="details-image">
+                <img src="./assets/${recipe.item}.png" alt="${recipe.label}" onerror="this.src='nui://rsg-inventory/html/images/${recipe.item}.png';">
+            </div>
+            <div class="details-ingredients">
+                <div class="req-label">Required</div>
+                <div id="ingredients-container">
+                    ${ingredientsHtml}
+                </div>
+            </div>
+            <div class="details-controls">
+                <div class="quantity-row">
+                    <button class="qty-btn" onclick="adjustQuantity(-1)">-</button>
+                    <input type="number" id="craft-qty-input" class="qty-input" value="1" min="1" max="100" onchange="adjustQuantity(0)">
+                    <button class="qty-btn" onclick="adjustQuantity(1)">+</button>
+                </div>
+                <div class="time-display" id="craft-time-display">Time: ${baseTime / 1000}s</div>
+                <button class="craft-btn" onclick="craftSelectedItem()">
+                    <i class="fa-solid fa-hammer"></i> Craft
+                </button>
+            </div>
+        </div>
+    `;
 }
 
-function adjustQty(item, delta) {
-    const input = document.getElementById(`qty-${item}`);
-    if (input) {
-        let val = parseInt(input.value) || 1;
-        val += delta;
-        if (val < 1) val = 1;
-        if (val > 100) val = 100;
-        input.value = val;
+function adjustQuantity(delta) {
+    const input = document.getElementById('craft-qty-input');
+    const timeDisplay = document.getElementById('craft-time-display');
+    const ingredientContainer = document.getElementById('ingredients-container');
+
+    if (!input) return;
+
+    let val = parseInt(input.value) || 1;
+    val += delta;
+    if (val < 1) val = 1;
+    if (val > 100) val = 100;
+    input.value = val;
+    window.selectedQuantity = val;
+
+    if (timeDisplay && window.selectedRecipe) {
+        const baseTime = window.selectedRecipe.time || 5000;
+        const totalTime = (baseTime * val) / 1000;
+        timeDisplay.innerHTML = `Time: ${totalTime}s`;
+    }
+
+    if (ingredientContainer) {
+        const qtyElements = ingredientContainer.querySelectorAll('.ing-qty');
+        qtyElements.forEach(el => {
+            const baseAmount = parseInt(el.dataset.base) || 1;
+            el.textContent = `${baseAmount * val}x`;
+        });
     }
 }
 
-function craftItem(item) {
-    const input = document.getElementById(`qty-${item}`);
-    const amount = input ? (parseInt(input.value) || 1) : 1;
+function craftSelectedItem() {
+    if (!window.selectedRecipe) return;
+
+    const item = window.selectedRecipe.item;
+    const amount = window.selectedQuantity || 1;
 
     console.log("Crafting item:", item, "Amount:", amount);
 
@@ -399,3 +614,115 @@ function craftItem(item) {
 
     closeMenu();
 }
+
+function openCraftModal(index) {
+    const recipes = window.currentRecipes;
+    if (!recipes || !recipes[index]) return;
+
+    const recipe = recipes[index];
+    window.selectedRecipe = recipe;
+    window.selectedQuantity = 1;
+
+    const baseTime = recipe.time || 5000;
+
+    let ingredientsHtml = '';
+    recipe.ingredients.forEach(ing => {
+        const label = ing.label || ing.item;
+        ingredientsHtml += `
+            <div class="craft-modal-ingredient">
+                <span class="qty" data-base="${ing.amount}">${ing.amount}x</span>
+                <span>${label}</span>
+            </div>
+        `;
+    });
+
+    const overlay = document.createElement('div');
+    overlay.className = 'craft-modal-overlay';
+    overlay.id = 'craft-modal-overlay';
+    overlay.innerHTML = `
+        <div class="craft-modal">
+            <div class="craft-modal-title">${recipe.label}</div>
+            <img class="craft-modal-image" src="./assets/${recipe.item}.png" alt="${recipe.label}" onerror="this.src='nui://rsg-inventory/html/images/${recipe.item}.png';">
+            <div class="craft-modal-ingredients">
+                <div class="req-label">Required</div>
+                <div id="modal-ingredients-container">
+                    ${ingredientsHtml}
+                </div>
+            </div>
+            <div class="craft-modal-controls">
+                <div class="craft-modal-qty-row">
+                    <button class="qty-btn" onclick="adjustModalQty(-1)">-</button>
+                    <input type="number" id="modal-qty-input" class="qty-input" value="1" min="1" max="100" onchange="adjustModalQty(0)">
+                    <button class="qty-btn" onclick="adjustModalQty(1)">+</button>
+                </div>
+                <div class="time-display" id="modal-time-display">Time: ${baseTime / 1000}s</div>
+            </div>
+            <div class="craft-modal-buttons">
+                <button class="craft-modal-btn cancel" onclick="closeCraftModal()">Cancel</button>
+                <button class="craft-modal-btn confirm" onclick="confirmCraft()">Craft</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+}
+
+function adjustModalQty(delta) {
+    const input = document.getElementById('modal-qty-input');
+    const timeDisplay = document.getElementById('modal-time-display');
+    const ingredientContainer = document.getElementById('modal-ingredients-container');
+
+    if (!input) return;
+
+    let val = parseInt(input.value) || 1;
+    val += delta;
+    if (val < 1) val = 1;
+    if (val > 100) val = 100;
+    input.value = val;
+    window.selectedQuantity = val;
+
+    if (timeDisplay && window.selectedRecipe) {
+        const baseTime = window.selectedRecipe.time || 5000;
+        const totalTime = (baseTime * val) / 1000;
+        timeDisplay.innerHTML = `Time: ${totalTime}s`;
+    }
+
+    if (ingredientContainer) {
+        const qtyElements = ingredientContainer.querySelectorAll('.qty');
+        qtyElements.forEach(el => {
+            const baseAmount = parseInt(el.dataset.base) || 1;
+            el.textContent = `${baseAmount * val}x`;
+        });
+    }
+}
+
+function closeCraftModal() {
+    const overlay = document.getElementById('craft-modal-overlay');
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+function confirmCraft() {
+    if (!window.selectedRecipe) return;
+
+    const item = window.selectedRecipe.item;
+    const amount = window.selectedQuantity || 1;
+
+    console.log("Crafting item:", item, "Amount:", amount);
+
+    fetch(`https://${GetParentResourceName()}/craftItem`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: JSON.stringify({
+            item: item,
+            amount: amount
+        })
+    });
+
+    closeCraftModal();
+    closeMenu();
+}
+

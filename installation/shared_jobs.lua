@@ -6,7 +6,9 @@
     grades = {
         ['0'] = { name = 'Trainee Rancher', payment = 3 },
         ['1'] = { name = 'Ranch Hand', payment = 5 },
-        ['2'] = { name = 'Ranch Manager', isboss = true, payment = 0 },
+        ['2'] = { name = 'Senior Rancher', payment = 7 },
+        ['3'] = { name = 'Ranch Manager', isboss = true, payment = 10 },
+        ['4'] = { name = 'Ranch Boss', isboss = true, payment = 15 },
     },
 },
 ['emeraldranch'] = {
@@ -17,7 +19,9 @@
     grades = {
         ['0'] = { name = 'Trainee Rancher', payment = 3 },
         ['1'] = { name = 'Ranch Hand', payment = 5 },
-        ['2'] = { name = 'Ranch Manager', isboss = true, payment = 0 },
+        ['2'] = { name = 'Senior Rancher', payment = 7 },
+        ['3'] = { name = 'Ranch Manager', isboss = true, payment = 10 },
+        ['4'] = { name = 'Ranch Boss', isboss = true, payment = 15 },
     },
 },
 ['pronghornranch'] = {
@@ -28,7 +32,9 @@
     grades = {
         ['0'] = { name = 'Trainee Rancher', payment = 3 },
         ['1'] = { name = 'Ranch Hand', payment = 5 },
-        ['2'] = { name = 'Ranch Manager', isboss = true, payment = 0 },
+        ['2'] = { name = 'Senior Rancher', payment = 7 },
+        ['3'] = { name = 'Ranch Manager', isboss = true, payment = 10 },
+        ['4'] = { name = 'Ranch Boss', isboss = true, payment = 15 },
     },
 },
 ['downesranch'] = {
@@ -39,7 +45,9 @@
     grades = {
         ['0'] = { name = 'Trainee Rancher', payment = 3 },
         ['1'] = { name = 'Ranch Hand', payment = 5 },
-        ['2'] = { name = 'Ranch Manager', isboss = true, payment = 0 },
+        ['2'] = { name = 'Senior Rancher', payment = 7 },
+        ['3'] = { name = 'Ranch Manager', isboss = true, payment = 10 },
+        ['4'] = { name = 'Ranch Boss', isboss = true, payment = 15 },
     },
 },
 ['hillhavenranch'] = {
@@ -50,10 +58,12 @@
     grades = {
         ['0'] = { name = 'Trainee Rancher', payment = 3 },
         ['1'] = { name = 'Ranch Hand', payment = 5 },
-        ['2'] = { name = 'Ranch Manager', isboss = true, payment = 0 },
+        ['2'] = { name = 'Senior Rancher', payment = 7 },
+        ['3'] = { name = 'Ranch Manager', isboss = true, payment = 10 },
+        ['4'] = { name = 'Ranch Boss', isboss = true, payment = 15 },
     },
 },
-['hangingdogranch'] = {
+    ['hangingdogranch'] = {
     label = 'Hanging Dog Rancher',
     type = 'rancher',
     defaultDuty = true,
@@ -61,6 +71,47 @@
     grades = {
         ['0'] = { name = 'Trainee Rancher', payment = 3 },
         ['1'] = { name = 'Ranch Hand', payment = 5 },
-        ['2'] = { name = 'Ranch Manager', isboss = true, payment = 0 },
+        ['2'] = { name = 'Senior Rancher', payment = 7 },
+        ['3'] = { name = 'Ranch Manager', isboss = true, payment = 10 },
+        ['4'] = { name = 'Ranch Boss', isboss = true, payment = 15 },
+    },
+},
+['bayounwaranch'] = {
+    label = 'Bayou Nwa Rancher',
+    type = 'rancher',
+    defaultDuty = true,
+    offDutyPay = false,
+    grades = {
+        ['0'] = { name = 'Trainee Rancher', payment = 3 },
+        ['1'] = { name = 'Ranch Hand', payment = 5 },
+        ['2'] = { name = 'Senior Rancher', payment = 7 },
+        ['3'] = { name = 'Ranch Manager', isboss = true, payment = 10 },
+        ['4'] = { name = 'Ranch Boss', isboss = true, payment = 15 },
+    },
+},
+['gaptoothranch'] = {
+    label = 'Gaptooth Rancher',
+    type = 'rancher',
+    defaultDuty = true,
+    offDutyPay = false,
+    grades = {
+        ['0'] = { name = 'Trainee Rancher', payment = 3 },
+        ['1'] = { name = 'Ranch Hand', payment = 5 },
+        ['2'] = { name = 'Senior Rancher', payment = 7 },
+        ['3'] = { name = 'Ranch Manager', isboss = true, payment = 10 },
+        ['4'] = { name = 'Ranch Boss', isboss = true, payment = 15 },
+    },
+},
+['adlerranch'] = {
+    label = 'Adler Rancher',
+    type = 'rancher',
+    defaultDuty = true,
+    offDutyPay = false,
+    grades = {
+        ['0'] = { name = 'Trainee Rancher', payment = 3 },
+        ['1'] = { name = 'Ranch Hand', payment = 5 },
+        ['2'] = { name = 'Senior Rancher', payment = 7 },
+        ['3'] = { name = 'Ranch Manager', isboss = true, payment = 10 },
+        ['4'] = { name = 'Ranch Boss', isboss = true, payment = 15 },
     },
 },

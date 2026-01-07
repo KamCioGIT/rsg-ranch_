@@ -120,6 +120,45 @@ Config.RanchLocations = {
         spawnpoint = vector4(1373.20, -845.12, 70.56, 301.98)
     },
     { 
+        name = 'Bayou Nwa Ranch',
+        ranchid = 'bayounwaranch',
+        coords = vector3(2258.3, -137.6, 46.2),
+        npcmodel = `u_m_m_valtownfolk_01`,
+        npccoords = vector4(2258.3, -137.6, 46.2, 0.0),
+        jobaccess = 'bayounwaranch',
+        blipname = 'Bayou Nwa Ranch',
+        blipsprite = 'blip_ambient_herd',
+        blipscale = 0.2,
+        showblip = true,
+        spawnpoint = vector4(2263.3, -137.6, 46.2, 0.0)
+    },
+    { 
+        name = 'Gaptooth Ranch',
+        ranchid = 'gaptoothranch',
+        coords = vector3(-5194.6, -2130.7, 12.1),
+        npcmodel = `u_m_m_valtownfolk_01`,
+        npccoords = vector4(-5194.6, -2130.7, 12.1, 0.0),
+        jobaccess = 'gaptoothranch',
+        blipname = 'Gaptooth Ranch',
+        blipsprite = 'blip_ambient_herd',
+        blipscale = 0.2,
+        showblip = true,
+        spawnpoint = vector4(-5189.6, -2130.7, 12.1, 0.0)
+    },
+    { 
+        name = 'Adler Ranch',
+        ranchid = 'adlerranch',
+        coords = vector3(-411.3, 1746.7, 216.3),
+        npcmodel = `u_m_m_valtownfolk_01`,
+        npccoords = vector4(-411.3, 1746.7, 216.3, 180.0),
+        jobaccess = 'adlerranch',
+        blipname = 'Adler Ranch',
+        blipsprite = 'blip_ambient_herd',
+        blipscale = 0.2,
+        showblip = true,
+        spawnpoint = vector4(-416.3, 1746.7, 216.3, 0.0)
+    },
+    { 
         name = 'Hanging Dog Ranch',
         ranchid = 'hangingdogranch',
         coords = vector3(-2207.69, 726.97, 122.82),
@@ -137,37 +176,37 @@ Config.RanchLocations = {
 -- Buy Point Locations
 Config.BuyPointLocations = {
     {
-        name = 'Livestock Dealer (Buy/Sell)', -- valentine
-        coords = vector3(-218.78, 652.80, 113.27),
+        name = 'Livestock Dealer (New Austin)',
+        coords = vector3(-4674.1, -3754.5, 13.9),
         npcmodel = `s_m_m_unibutchers_01`,
-        npccoords = vector4(-218.78, 652.80, 113.27, 241.67),
+        npccoords = vector4(-4674.1, -3754.5, 13.9, 0.0),
         blipname = 'Livestock Dealer',
         blipsprite = 'blip_shop_horse',
         blipscale = 0.2,
         showblip = true,
-        spawnpoint = vector4(-217.61, 649.48, 113.10, 195.09)
+        spawnpoint = vector4(-4672.0, -3754.5, 13.9, 0.0)
     },
     {
-        name = 'Livestock Dealer (Buy/Sell)', -- near strawberry
-        coords = vector3(-1834.75, -578.28, 155.97),
+        name = 'Livestock Dealer (Lemoyne)',
+        coords = vector3(2573.9, -781.7, 42.4),
         npcmodel = `s_m_m_unibutchers_01`,
-        npccoords = vector4(-1834.75, -578.28, 155.97, 304.67),
+        npccoords = vector4(2573.9, -781.7, 42.4, 0.0),
         blipname = 'Livestock Dealer',
         blipsprite = 'blip_shop_horse',
         blipscale = 0.2,
         showblip = true,
-        spawnpoint = vector4(-1830.77, -576.25, 155.97, 291.70)
+        spawnpoint = vector4(2575.9, -781.7, 42.4, 0.0)
     },
     {
-        name = 'Livestock Dealer (Buy/Sell)', -- wallace station
-        coords = vector3(-1309.82, 387.21, 95.35),
+        name = 'Livestock Dealer (Heartlands)',
+        coords = vector3(-370.2, -349.8, 87.2),
         npcmodel = `s_m_m_unibutchers_01`,
-        npccoords = vector4(-1309.82, 387.21, 95.35, 167.82),
+        npccoords = vector4(-370.2, -349.8, 87.2, 0.0),
         blipname = 'Livestock Dealer',
         blipsprite = 'blip_shop_horse',
         blipscale = 0.2,
         showblip = true,
-        spawnpoint = vector4(-1311.06, 385.14, 95.51, 95.24)
+        spawnpoint = vector4(-368.2, -349.8, 87.2, 0.0)
     },
 }
 
@@ -222,7 +261,7 @@ Config.CraftingRecipes = {
         item = 'cheese', 
         label = 'Cheese', 
         ingredients = { 
-            { item = 'milk', amount = 1 }
+            { item = 'milk', amount = 1, label = 'Milk' }
         },
         time = 5000,
         animDict = 'mech_inventory@crafting@fallbacks',
@@ -232,7 +271,7 @@ Config.CraftingRecipes = {
         item = 'butter', 
         label = 'Butter', 
         ingredients = { 
-            { item = 'milk', amount = 1 } 
+            { item = 'milk', amount = 1, label = 'Milk' } 
         },
         time = 4000,
         animDict = 'mech_inventory@crafting@fallbacks',
@@ -242,7 +281,7 @@ Config.CraftingRecipes = {
         item = 'fertilizer', 
         label = 'Fertilizer', 
         ingredients = { 
-            { item = 'manure', amount = 1 } 
+            { item = 'manure', amount = 1, label = 'Manure' } 
         },
         time = 3000,
         animDict = 'mech_inventory@crafting@fallbacks',
@@ -252,8 +291,8 @@ Config.CraftingRecipes = {
         item = 'animal_feed', 
         label = 'Animal Feed', 
         ingredients = { 
-            { item = 'wheat', amount = 1 },
-            { item = 'Corn', amount = 1 } 
+            { item = 'wheat', amount = 1, label = 'Wheat' },
+            { item = 'Corn', amount = 1, label = 'Corn' } 
         },
         time = 3000,
         animDict = 'mech_inventory@crafting@fallbacks',
@@ -262,15 +301,6 @@ Config.CraftingRecipes = {
 }
 
 Config.ButcherProp = 'p_table04x'
+Config.ButcherTables = {}
 
--- Add predefined tables here. Format:
--- { coords = vector4(x, y, z, h) }
-Config.ButcherTables = {
-    { coords = vector4(1415.30, 285.92, 89.25, 24.35) },
-    { coords = vector4(1356.94, -842.45, 70.78, 198.55) },
-    { coords = vector4(-2228.70, 721.07, 122.72, 204.37) },
-    { coords = vector4(-2563.39, 395.30, 148.48, 85.65) },
-    { coords = vector4(-870.72, 331.32, 96.37, 79.34) },
-    { coords = vector4(-2408.72, -2384.87, 61.23, 46.58) },
-}
 

@@ -33,28 +33,23 @@ body {
     display: none !important;
 }
 
-/* MAIN CONTAINER (PREMIUM LOOK) */
+/* MAIN CONTAINER (PARCHMENT PAPER LOOK) */
 .ranch-ui-container {
     width: 70%;
     max-width: 1100px;
     height: 80%;
-    background-color: var(--bg-dark);
-    background-image:
-        radial-gradient(circle at center, rgba(212, 175, 55, 0.05) 0%, transparent 70%),
-        url('https://www.transparenttextures.com/patterns/black-scales.png');
-    border: 4px solid var(--gold);
-    box-shadow:
-        0 0 0 8px var(--bg-dark),
-        /* Inner gap */
-        0 0 0 10px var(--gold-dim),
-        /* Outer border */
-        0 20px 50px rgba(0, 0, 0, 0.9);
-    border-radius: 4px;
-    padding: 2.5rem;
+    /* Parchment Background Image */
+    background: url('./assets/parchment_bg.jpg') center center / cover no-repeat;
+    /* No border - parchment has natural edges */
+    border: none;
+    outline: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    border-radius: 0;
+    padding: 4rem 3rem 3rem 3rem;
     position: relative;
     display: flex;
     flex-direction: column;
-    color: var(--text-light);
+    color: #3d2914;
     z-index: 9999;
 }
 
@@ -199,6 +194,33 @@ body {
     color: var(--gold);
     transform: scale(1.1);
     text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+}
+
+/* QUANTITY INPUT */
+.qty-input-field {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    font-family: var(--mono-font);
+    font-size: 1.1rem;
+    padding: 5px;
+    width: 60px;
+    text-align: center;
+    outline: none;
+    border-radius: 2px;
+    transition: border-color 0.3s;
+}
+
+.qty-input-field:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+}
+
+/* HIDE SPINNER */
+.qty-input-field::-webkit-inner-spin-button,
+.qty-input-field::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 /* LUXURY BUTTON */
@@ -363,223 +385,295 @@ body {
     }
 }
 
-/* CRAFTING MENU SPECIFIC (DARK LUXURY ELEGANCE) */
-#crafting-menu {
-    background: radial-gradient(circle at center, #1b1b1b 0%, #000000 100%);
-    border: 3px solid #d4af37;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), inset 0 0 100px rgba(0, 0, 0, 0.8);
-    color: var(--text-light);
-    width: 65%;
-    /* Slightly narrower for elegance */
+/* CRAFTING MENU (VINTAGE PAPER SPLIT LAYOUT) */
+#crafting-menu.split-layout {
+    background: linear-gradient(135deg, #d4c4a8 0%, #c9b896 100%);
+    border: 3px solid #5c4a32;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    color: #3d2914;
+    width: 70%;
+    max-width: 850px;
+    height: 70%;
     padding: 0;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 #crafting-menu .ui-header {
-    background: linear-gradient(to bottom, rgba(212, 175, 55, 0.1), transparent);
-    padding: 2rem 0;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-    margin-bottom: 0;
+    background: transparent;
+    padding: 1.5rem 2rem;
+    border-bottom: 2px solid #5c4a32;
+    flex-shrink: 0;
+    margin: 0;
 }
 
 #crafting-menu .ui-header h1 {
-    font-family: 'Cinzel', serif;
-    font-weight: 700;
-    font-size: 3rem;
-    color: #d4af37;
-    letter-spacing: 8px;
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+    font-family: 'Rye', serif;
+    font-weight: 400;
+    font-size: 2.5rem;
+    color: #3d2914;
+    letter-spacing: 4px;
+    text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.3);
 }
 
 #crafting-menu .ui-header span {
-    font-family: 'Montserrat', sans-serif;
-    /* Clean contrast */
+    font-family: var(--body-font);
     text-transform: uppercase;
-    letter-spacing: 4px;
-    font-size: 0.9rem;
-    color: #888;
+    letter-spacing: 3px;
+    font-size: 0.85rem;
+    color: #6b5344;
+    display: block;
+    margin-top: 5px;
 }
 
-/* Close Button Override */
 #crafting-menu .close-btn {
-    color: #d4af37;
-    border-color: #d4af37;
-    top: 25px;
-    right: 30px;
+    color: #5c4a32;
+    border-color: #5c4a32;
+    background: transparent;
+    top: 20px;
+    right: 25px;
 }
 
 #crafting-menu .close-btn:hover {
-    background: #d4af37;
-    color: #000;
+    background: #5c4a32;
+    color: #d4c4a8;
 }
 
-/* GRID LAYOUT */
-.crafting-grid-layout {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2rem;
-    padding: 3rem;
-    overflow-y: auto;
-    height: 100%;
+/* SPLIT CONTAINER */
+.crafting-split-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
 }
 
-/* CARD STYLING */
-.crafting-card {
-    background: rgba(20, 20, 20, 0.8);
-    border: 1px solid rgba(212, 175, 55, 0.2);
-    border-radius: 4px;
+/* LEFT SIDEBAR */
+.crafting-sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: rgba(92, 74, 50, 0.15);
+    border-right: 2px solid #8b7355;
     display: flex;
     flex-direction: column;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.4s ease;
-    height: auto;
-    min-height: 450px;
-    /* Ensure consistent minimum size */
 }
 
-.crafting-card:hover {
-    border-color: #d4af37;
-    box-shadow: 0 0 25px rgba(212, 175, 55, 0.15);
-    background: rgba(30, 30, 30, 0.9);
-    transform: translateY(-5px);
-}
-
-/* Header Line */
-.card-header-elegant {
+.sidebar-header {
     padding: 1rem;
+    font-family: var(--body-font);
+    font-size: 0.9rem;
+    color: #5c4a32;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 1px solid #8b7355;
     text-align: center;
-    background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.1), transparent);
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
 }
 
-.card-header-elegant span {
-    font-family: 'Cinzel', serif;
-    font-size: 1.4rem;
-    color: #f0e68c;
+.crafting-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.crafting-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    background: rgba(139, 115, 85, 0.2);
+    border: 1px solid transparent;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.crafting-list-item:hover {
+    background: rgba(139, 115, 85, 0.4);
+    border-color: #8b7355;
+}
+
+.crafting-list-item.active {
+    background: rgba(92, 74, 50, 0.4);
+    border-color: #5c4a32;
+}
+
+.crafting-list-item img {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+}
+
+.crafting-list-item span {
+    font-family: var(--body-font);
+    font-size: 0.95rem;
+    color: #3d2914;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.crafting-list-item.active span {
+    color: #3d2914;
+    font-weight: bold;
+}
+
+/* RIGHT DETAILS PANEL */
+.crafting-details-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    overflow-y: auto;
+    background: rgba(201, 184, 150, 0.5);
+}
+
+.details-placeholder {
+    font-family: var(--body-font);
+    font-size: 1rem;
+    color: #6b5344;
     text-transform: uppercase;
     letter-spacing: 2px;
 }
 
-/* Body */
-.card-body-elegant {
-    flex-grow: 1;
+/* Details Content */
+.details-content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1.5rem;
+    width: 100%;
+    max-width: 380px;
     gap: 1.5rem;
 }
 
-.crafting-icon-elegant {
-    width: 100px;
-    height: 100px;
+.details-title {
+    font-family: 'Rye', serif;
+    font-size: 1.8rem;
+    color: #3d2914;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-align: center;
+}
+
+.details-image {
+    width: 150px;
+    height: 150px;
     display: flex;
     align-items: center;
     justify-content: center;
-    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
-    transition: transform 0.3s;
+    background: #e8dcc8;
+    border: 2px solid #8b7355;
+    padding: 15px;
 }
 
-.crafting-card:hover .crafting-icon-elegant {
-    transform: scale(1.1);
-}
-
-.crafting-icon-elegant img {
+.details-image img {
     max-width: 100%;
     max-height: 100%;
 }
 
-/* Ingredients List */
-.ingredients-list {
+/* Ingredients Box */
+.details-ingredients {
     width: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: #e8dcc8;
+    border: 2px solid #8b7355;
+    padding: 1rem;
 }
 
-.req-label {
-    font-size: 0.7rem;
-    color: #666;
+.details-ingredients .req-label {
+    font-family: 'Special Elite', monospace;
+    font-size: 0.8rem;
+    color: #5c4a32;
     letter-spacing: 2px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     text-align: center;
+    text-transform: uppercase;
 }
 
-.ingredient-item {
+.ingredient-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dashed #8b7355;
     font-family: 'Special Elite', monospace;
-    font-size: 0.9rem;
-    color: #aaa;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
-    padding-bottom: 4px;
-    margin-bottom: 4px;
+    font-size: 0.95rem;
 }
 
-.ingredient-item:last-child {
+.ingredient-row:last-child {
     border-bottom: none;
 }
 
-.ing-amount {
-    color: #d4af37;
+.ingredient-row .ing-qty {
+    color: #5c4a32;
     font-weight: bold;
 }
 
-/* Footer & Button */
-.card-footer-elegant {
-    padding: 1.5rem;
-    margin-top: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.ingredient-row .ing-name {
+    color: #3d2914;
 }
 
-.quantity-selector {
+/* Controls */
+.details-controls {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+}
+
+.quantity-row {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 10px;
 }
 
 .qty-btn {
     background: transparent;
-    border: 1px solid #d4af37;
-    color: #d4af37;
-    width: 30px;
-    height: 30px;
+    border: 2px solid #5c4a32;
+    color: #5c4a32;
+    width: 35px;
+    height: 35px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-family: 'Cinzel', serif;
+    font-family: var(--body-font);
     font-weight: bold;
+    font-size: 1.2rem;
+    transition: all 0.2s;
 }
 
 .qty-btn:hover {
-    background: rgba(212, 175, 55, 0.2);
+    background: rgba(92, 74, 50, 0.3);
 }
 
 .qty-input {
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(212, 175, 55, 0.5);
-    color: #f0e68c;
+    background: #f5efe6;
+    border: 2px solid #8b7355;
+    color: #3d2914;
     width: 60px;
     text-align: center;
     font-family: 'Special Elite', monospace;
     font-size: 1.1rem;
-    padding: 5px;
+    padding: 8px;
 }
 
-.crafting-btn-elegant {
+.time-display {
+    font-family: 'Special Elite', monospace;
+    font-size: 0.9rem;
+    color: #5c4a32;
+    text-align: center;
+}
+
+.craft-btn {
     width: 100%;
-    padding: 1rem;
-    background: transparent;
-    border: 1px solid #d4af37;
-    color: #d4af37;
-    font-family: 'Cinzel', serif;
+    padding: 1rem 2rem;
+    background: #6b5344;
+    border: none;
+    color: #f5efe6;
+    font-family: var(--body-font);
     font-weight: 700;
     font-size: 1.1rem;
     letter-spacing: 2px;
@@ -592,8 +686,256 @@ body {
     gap: 10px;
 }
 
-.crafting-btn-elegant:hover {
-    background: #d4af37;
-    color: #000;
-    box-shadow: 0 0 15px #d4af37;
+.craft-btn:hover {
+    background: #3d2914;
+}
+
+/* Scrollbar */
+.crafting-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.crafting-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.crafting-list::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.4);
+    border-radius: 3px;
+}
+
+.crafting-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.6);
+}
+
+.crafting-list-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: contain;
+    padding: 15px;
+    background: #f5efe6;
+    border-bottom: 2px solid #8b7355;
+}
+
+.crafting-list-item span {
+    font-family: 'Rye', serif;
+    font-size: 0.9rem;
+    color: #3d2914;
+    text-transform: none;
+    letter-spacing: 0;
+    padding: 10px;
+    text-align: center;
+    width: 100%;
+}
+
+/* CRAFT Button on each card */
+.craft-card-btn {
+    width: 100%;
+    padding: 10px;
+    background: #6b5344;
+    border: none;
+    color: #f5efe6;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+}
+
+.craft-card-btn:hover {
+    background: #3d2914;
+}
+
+/* Hide the details panel in grid mode */
+.crafting-details-panel {
+    display: none;
+}
+
+.details-placeholder {
+    display: none;
+}
+
+/* Footer hint */
+.crafting-footer-hint {
+    text-align: center;
+    padding: 1rem;
+    font-family: 'Special Elite', monospace;
+    font-size: 0.85rem;
+    color: #5c4a32;
+    border-top: 1px solid #8b7355;
+    margin: 0 2rem;
+}
+
+/* Scrollbar for vintage look */
+.crafting-split-container::-webkit-scrollbar {
+    width: 10px;
+}
+
+.crafting-split-container::-webkit-scrollbar-track {
+    background: #c9b896;
+}
+
+.crafting-split-container::-webkit-scrollbar-thumb {
+    background: #8b7355;
+    border: 2px solid #c9b896;
+}
+
+.crafting-split-container::-webkit-scrollbar-thumb:hover {
+    background: #5c4a32;
+}
+
+/* Quantity Modal Overlay */
+.craft-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+}
+
+.craft-modal {
+    background: linear-gradient(135deg, #d4c4a8 0%, #c9b896 100%);
+    border: 4px solid #5c4a32;
+    padding: 2rem;
+    min-width: 350px;
+    text-align: center;
+}
+
+.craft-modal-title {
+    font-family: 'Rye', serif;
+    font-size: 1.8rem;
+    color: #3d2914;
+    margin-bottom: 1.5rem;
+}
+
+.craft-modal-image {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    margin-bottom: 1rem;
+}
+
+.craft-modal-ingredients {
+    background: #e8dcc8;
+    border: 2px solid #8b7355;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.craft-modal-ingredients .req-label {
+    font-family: 'Special Elite', monospace;
+    font-size: 0.8rem;
+    color: #5c4a32;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.craft-modal-ingredient {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    font-family: 'Special Elite', monospace;
+    font-size: 0.95rem;
+    color: #3d2914;
+    border-bottom: 1px dashed #8b7355;
+}
+
+.craft-modal-ingredient:last-child {
+    border-bottom: none;
+}
+
+.craft-modal-ingredient .qty {
+    font-weight: bold;
+    color: #5c4a32;
+}
+
+.craft-modal-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+}
+
+.craft-modal-qty-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.craft-modal .qty-btn {
+    background: #6b5344;
+    border: none;
+    color: #f5efe6;
+    width: 35px;
+    height: 35px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.craft-modal .qty-btn:hover {
+    background: #3d2914;
+}
+
+.craft-modal .qty-input {
+    background: #f5efe6;
+    border: 2px solid #8b7355;
+    color: #3d2914;
+    width: 60px;
+    text-align: center;
+    font-family: 'Special Elite', monospace;
+    font-size: 1.2rem;
+    padding: 5px;
+}
+
+.craft-modal .time-display {
+    font-family: 'Special Elite', monospace;
+    font-size: 0.9rem;
+    color: #5c4a32;
+}
+
+.craft-modal-buttons {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.craft-modal-btn {
+    flex: 1;
+    padding: 12px;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.craft-modal-btn.confirm {
+    background: #6b5344;
+    border: none;
+    color: #f5efe6;
+}
+
+.craft-modal-btn.confirm:hover {
+    background: #3d2914;
+}
+
+.craft-modal-btn.cancel {
+    background: transparent;
+    border: 2px solid #5c4a32;
+    color: #5c4a32;
+}
+
+.craft-modal-btn.cancel:hover {
+    background: #5c4a32;
+    color: #f5efe6;
 }
