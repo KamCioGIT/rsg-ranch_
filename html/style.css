@@ -64,25 +64,25 @@ body {
 .ui-header {
     text-align: center;
     margin-bottom: 2rem;
-    border-bottom: 2px solid var(--gold-dim);
+    border-bottom: 2px solid #5c4a32;
     padding-bottom: 1.5rem;
-    background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.1), transparent);
+    background: transparent;
 }
 
 .ui-header h1 {
     font-family: var(--header-font);
-    font-size: 3.5rem;
+    font-size: 3rem;
     margin: 0;
-    color: var(--gold);
+    color: #3d2914;
     text-transform: uppercase;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.3);
     letter-spacing: 4px;
 }
 
 .ui-header span {
     font-family: var(--body-font);
-    font-size: 1.1rem;
-    color: var(--text-muted);
+    font-size: 1rem;
+    color: #5c4a32;
     letter-spacing: 2px;
     text-transform: uppercase;
 }
@@ -126,48 +126,46 @@ body {
 
 /* CUSTOM SCROLLBAR */
 .ui-content::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
 }
 
 .ui-content::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(139, 115, 85, 0.2);
 }
 
 .ui-content::-webkit-scrollbar-thumb {
-    background: var(--gold-dim);
-    border-radius: 3px;
+    background: #8b7355;
+    border-radius: 4px;
 }
 
-/* CARDS (PREMIUM) */
+/* CARDS (PARCHMENT) */
 .item-card {
-    background: linear-gradient(135deg, var(--bg-panel) 0%, #3e2723 100%);
-    border: 1px solid var(--gold-dim);
+    background: rgba(232, 220, 200, 0.9);
+    border: 2px solid #8b7355;
     border-radius: 4px;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
     position: relative;
-    /* overflow: hidden; -- REMOVED to show button */
     min-height: 250px;
-    /* Ensure space for button */
     pointer-events: auto !important;
 }
 
 .item-card:hover {
     transform: translateY(-5px);
-    border-color: var(--gold);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(212, 175, 55, 0.1);
+    border-color: #5c4a32;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .item-title {
     font-family: var(--body-font);
     font-size: 1.1rem;
     margin-bottom: 0.8rem;
-    color: var(--text-light);
+    color: #3d2914;
     font-weight: 700;
     text-transform: uppercase;
 }
@@ -175,25 +173,22 @@ body {
 .item-price {
     font-family: var(--mono-font);
     font-weight: bold;
-    color: var(--gold);
+    color: #5c4a32;
     font-size: 1.3rem;
     margin-bottom: 1.2rem;
-    margin-bottom: 1.2rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-shadow: none;
 }
 
 .card-icon {
     font-size: 2.5rem;
-    color: var(--gold-dim);
+    color: #6b5344;
     margin-bottom: 1rem;
     transition: all 0.3s ease;
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
 .item-card:hover .card-icon {
-    color: var(--gold);
+    color: #3d2914;
     transform: scale(1.1);
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
 }
 
 /* QUANTITY INPUT */
@@ -212,8 +207,8 @@ body {
 }
 
 .qty-input-field:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
+    border-color: #5c4a32;
+    box-shadow: 0 0 5px rgba(92, 74, 50, 0.3);
 }
 
 /* HIDE SPINNER */
@@ -223,12 +218,12 @@ body {
     margin: 0;
 }
 
-/* LUXURY BUTTON */
+/* PARCHMENT BUTTON */
 .item-btn {
     margin-top: auto;
-    background: linear-gradient(to bottom, var(--gold) 0%, var(--gold-dim) 100%);
-    color: #1e130c;
-    border: 1px solid #ffd700;
+    background: #6b5344;
+    color: #f5efe6;
+    border: none;
     padding: 0.6rem 1.2rem;
     font-family: var(--body-font);
     font-weight: 800;
@@ -237,7 +232,7 @@ body {
     text-transform: uppercase;
     transition: all 0.2s;
     width: 100%;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     border-radius: 2px;
     position: relative;
     z-index: 10;
@@ -245,8 +240,7 @@ body {
 }
 
 .item-btn:hover {
-    filter: brightness(1.2);
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    background: #3d2914;
 }
 
 /* BOSS STATS STRIP */
@@ -254,30 +248,25 @@ body {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    /* Ensure full width */
     margin-bottom: 2rem;
     gap: 1.5rem;
     box-sizing: border-box;
-    /* Include padding/border in width */
     padding: 0 1rem;
-    /* Add some padding to prevent edge touches */
 }
 
 .stat-box {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--gold-dim);
+    background: rgba(232, 220, 200, 0.8);
+    border: 2px solid #8b7355;
     padding: 1rem;
     flex: 1;
-    /* Grow evenly */
     min-width: 0;
-    /* Prevent overflow */
     text-align: center;
     border-radius: 2px;
 }
 
 .stat-box div:first-child {
     font-size: 0.9rem;
-    color: var(--text-muted);
+    color: #5c4a32;
     text-transform: uppercase;
     margin-bottom: 0.5rem;
     letter-spacing: 1px;
@@ -292,16 +281,16 @@ body {
 /* CLOSE BUTTON */
 .close-btn {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 25px;
+    right: 25px;
     background: transparent;
-    border: 2px solid var(--danger);
+    border: 2px solid #5c4a32;
     width: 40px;
     height: 40px;
     border-radius: 50%;
     font-family: var(--header-font);
     font-size: 1.2rem;
-    color: var(--danger);
+    color: #5c4a32;
     cursor: pointer;
     z-index: 100;
     display: flex;
@@ -311,8 +300,8 @@ body {
 }
 
 .close-btn:hover {
-    background: var(--danger);
-    color: var(--text-light);
+    background: #5c4a32;
+    color: #f5efe6;
     transform: rotate(90deg);
 }
 
@@ -385,11 +374,11 @@ body {
     }
 }
 
-/* CRAFTING MENU (VINTAGE PAPER SPLIT LAYOUT) */
+/* CRAFTING MENU (PARCHMENT SPLIT LAYOUT) */
 #crafting-menu.split-layout {
-    background: linear-gradient(135deg, #d4c4a8 0%, #c9b896 100%);
-    border: 3px solid #5c4a32;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    background: url('./assets/parchment_bg.jpg') center center / cover no-repeat;
+    border: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
     color: #3d2914;
     width: 70%;
     max-width: 850px;
@@ -405,7 +394,7 @@ body {
     padding: 1.5rem 2rem;
     border-bottom: 2px solid #5c4a32;
     flex-shrink: 0;
-    margin: 0;
+    margin: 0 2rem;
 }
 
 #crafting-menu .ui-header h1 {
@@ -422,7 +411,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 3px;
     font-size: 0.85rem;
-    color: #6b5344;
+    color: #5c4a32;
     display: block;
     margin-top: 5px;
 }
@@ -445,13 +434,14 @@ body {
     display: flex;
     flex: 1;
     overflow: hidden;
+    margin: 0 2rem 2rem 2rem;
 }
 
 /* LEFT SIDEBAR */
 .crafting-sidebar {
-    width: 240px;
-    min-width: 240px;
-    background: rgba(92, 74, 50, 0.15);
+    width: 220px;
+    min-width: 220px;
+    background: rgba(92, 74, 50, 0.1);
     border-right: 2px solid #8b7355;
     display: flex;
     flex-direction: column;
@@ -460,7 +450,7 @@ body {
 .sidebar-header {
     padding: 1rem;
     font-family: var(--body-font);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: #5c4a32;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -479,10 +469,11 @@ body {
 
 .crafting-list-item {
     display: flex;
+    flex-direction: row;
     align-items: center;
-    gap: 12px;
-    padding: 12px 15px;
-    background: rgba(139, 115, 85, 0.2);
+    gap: 10px;
+    padding: 10px;
+    background: rgba(232, 220, 200, 0.6);
     border: 1px solid transparent;
     border-radius: 2px;
     cursor: pointer;
@@ -490,27 +481,31 @@ body {
 }
 
 .crafting-list-item:hover {
-    background: rgba(139, 115, 85, 0.4);
+    background: rgba(232, 220, 200, 0.9);
     border-color: #8b7355;
 }
 
 .crafting-list-item.active {
-    background: rgba(92, 74, 50, 0.4);
+    background: rgba(139, 115, 85, 0.3);
     border-color: #5c4a32;
 }
 
 .crafting-list-item img {
-    width: 45px;
-    height: 45px;
+    width: 40px;
+    height: 40px;
     object-fit: contain;
+    flex-shrink: 0;
 }
 
 .crafting-list-item span {
     font-family: var(--body-font);
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     color: #3d2914;
     text-transform: uppercase;
     letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .crafting-list-item.active span {
@@ -527,7 +522,7 @@ body {
     justify-content: center;
     padding: 2rem;
     overflow-y: auto;
-    background: rgba(201, 184, 150, 0.5);
+    background: transparent;
 }
 
 .details-placeholder {
@@ -705,67 +700,7 @@ body {
 }
 
 .crafting-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(212, 175, 55, 0.6);
-}
-
-.crafting-list-item img {
-    width: 100%;
-    height: 120px;
-    object-fit: contain;
-    padding: 15px;
-    background: #f5efe6;
-    border-bottom: 2px solid #8b7355;
-}
-
-.crafting-list-item span {
-    font-family: 'Rye', serif;
-    font-size: 0.9rem;
-    color: #3d2914;
-    text-transform: none;
-    letter-spacing: 0;
-    padding: 10px;
-    text-align: center;
-    width: 100%;
-}
-
-/* CRAFT Button on each card */
-.craft-card-btn {
-    width: 100%;
-    padding: 10px;
-    background: #6b5344;
-    border: none;
-    color: #f5efe6;
-    font-family: 'Cinzel', serif;
-    font-weight: 700;
-    font-size: 0.85rem;
-    letter-spacing: 2px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-transform: uppercase;
-}
-
-.craft-card-btn:hover {
-    background: #3d2914;
-}
-
-/* Hide the details panel in grid mode */
-.crafting-details-panel {
-    display: none;
-}
-
-.details-placeholder {
-    display: none;
-}
-
-/* Footer hint */
-.crafting-footer-hint {
-    text-align: center;
-    padding: 1rem;
-    font-family: 'Special Elite', monospace;
-    font-size: 0.85rem;
-    color: #5c4a32;
-    border-top: 1px solid #8b7355;
-    margin: 0 2rem;
+    background: #5c4a32;
 }
 
 /* Scrollbar for vintage look */
