@@ -175,6 +175,17 @@
         </div>
     </div>
 
+    <div id="rename-modal" class="input-modal-overlay hidden">
+        <div class="input-modal">
+            <h2>Rename Animal</h2>
+            <input type="text" id="rename-input" placeholder="Enter new name" maxlength="30">
+            <div class="modal-btns">
+                <button class="modal-btn cancel" onclick="closeRenameModal()">Cancel</button>
+                <button class="modal-btn confirm" onclick="submitRename()">Save</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 

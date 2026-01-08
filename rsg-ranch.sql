@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS `rsg_ranch_animals` (
   `ranchid` varchar(50) DEFAULT NULL,
   `animalid` varchar(50) DEFAULT NULL,
   `model` varchar(50) NOT NULL,
+  `name` varchar(50) DEFAULT NULL,
   
   -- Location
   `pos_x` float NOT NULL DEFAULT 0,

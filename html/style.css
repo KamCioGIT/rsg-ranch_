@@ -63,10 +63,27 @@ body {
 /* HEADER */
 .ui-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 0.5rem;
+    /* Reduced gap */
     border-bottom: 2px solid #5c4a32;
-    padding-bottom: 1.5rem;
+    padding-bottom: 1rem;
     background: transparent;
+}
+
+/* ... existing styles ... */
+.boss-stats {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    gap: 2rem;
+    box-sizing: border-box;
+    padding: 1rem 0;
+    /* Tighter padding */
+    border-top: 2px solid #3e2723;
+    /* Darker Chocolate Brown */
+    border-bottom: 2px solid #3e2723;
+    /* Darker Chocolate Brown */
 }
 
 .ui-header h1 {
@@ -246,36 +263,60 @@ body {
 /* BOSS STATS STRIP */
 .boss-stats {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     width: 100%;
     margin-bottom: 2rem;
-    gap: 1.5rem;
+    gap: 2rem;
     box-sizing: border-box;
-    padding: 0 1rem;
+    padding: 1.5rem 0;
+    border-top: 2px solid #3e2723;
+    /* Darker Chocolate Brown */
+    border-bottom: 2px solid #3e2723;
+    /* Darker Chocolate Brown */
 }
 
 .stat-box {
-    background: rgba(232, 220, 200, 0.8);
-    border: 2px solid #8b7355;
+    background: rgba(232, 220, 200, 0.2);
+    border: 1px solid #4e342e;
+    /* Chocolate Brown */
     padding: 1rem;
-    flex: 1;
-    min-width: 0;
-    text-align: center;
+    min-width: 150px;
+    height: 130px;
+    /* Fixed height for consistent look */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    /* Move content towards top */
     border-radius: 2px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .stat-box div:first-child {
+    font-family: var(--body-font);
     font-size: 0.9rem;
-    color: #5c4a32;
+    /* Smaller size */
+    color: #3e2723;
+    /* Chocolate Brown */
     text-transform: uppercase;
-    margin-bottom: 0.5rem;
-    letter-spacing: 1px;
+    letter-spacing: 3px;
+    margin-bottom: auto;
+    /* Push number down */
+    margin-top: 5px;
+    font-weight: 800;
+    /* Extra Bold */
 }
 
 .stat-box div:last-child {
-    font-size: 1.8rem;
-    color: var(--gold);
-    font-family: var(--mono-font);
+    font-family: 'Rye', serif;
+    font-size: 2.8rem;
+    /* Larger */
+    color: #3e2723;
+    /* Chocolate Brown */
+    text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.3);
+    font-weight: normal;
+    margin-bottom: 20px;
+    /* Space from bottom */
 }
 
 /* CLOSE BUTTON */
@@ -323,47 +364,56 @@ body {
     left: 50%;
     transform: translateX(-50%);
     width: 400px;
-    background: rgba(30, 19, 12, 0.95);
-    border: 3px solid var(--gold);
+    /* Parchment Theme */
+    background: url('./assets/parchment_bg.jpg') center center / cover no-repeat;
+    border: 2px solid #5c4a32;
     padding: 15px 25px;
-    border-radius: 4px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 0 0 5px rgba(139, 69, 19, 0.5);
+    border-radius: 2px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
     text-align: center;
     z-index: 10000;
 }
 
 #progress-label {
     font-family: var(--header-font);
-    color: var(--gold);
+    color: #3e2723;
+    /* Chocolate Brown */
     font-size: 1.4rem;
     margin-bottom: 10px;
     text-transform: uppercase;
-    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.8);
+    text-shadow: none;
+    /* Removed heavy shadow */
     letter-spacing: 2px;
+    font-weight: bold;
 }
 
 .progress-track {
     width: 100%;
-    height: 12px;
-    background: #2a1b15;
-    border: 1px solid var(--gold-dim);
-    border-radius: 6px;
+    height: 14px;
+    /* Slightly taller */
+    background: rgba(62, 39, 35, 0.1);
+    /* Faint brown track */
+    border: 1px solid #5c4a32;
+    border-radius: 2px;
     overflow: hidden;
     position: relative;
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 #progress-fill {
     width: 0%;
     height: 100%;
-    background: linear-gradient(90deg, #8b5a2b, #d4af37, #8b5a2b);
-    background-size: 200% 100%;
-    animation: shine 2s infinite linear;
-    border-radius: 6px;
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+    background: #3e2723;
+    /* Chocolate Brown Fill */
+    /* Optional: Subtle texture or gradient */
+    background: linear-gradient(90deg, #5d4037, #3e2723);
+
+    /* Removed flashy animation for cleaner look, or keep subtle */
     transition: width 0.1s linear;
+    border-radius: 1px;
 }
 
+/* Optional Shine removed or kept very subtle if desired */
 @keyframes shine {
     0% {
         background-position: 100% 0;
@@ -873,4 +923,98 @@ body {
 .craft-modal-btn.cancel:hover {
     background: #5c4a32;
     color: #f5efe6;
+}
+
+/* INPUT MODAL (GENERIC) */
+.input-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20000;
+}
+
+.input-modal {
+    background: linear-gradient(135deg, #d4c4a8 0%, #c9b896 100%);
+    border: 4px solid #5c4a32;
+    padding: 2rem;
+    min-width: 300px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    position: relative;
+    border-radius: 4px;
+}
+
+.input-modal h2 {
+    font-family: 'Rye', serif;
+    font-size: 1.8rem;
+    color: #3d2914;
+    margin-bottom: 1.5rem;
+    margin-top: 0;
+    text-transform: uppercase;
+}
+
+.input-modal input {
+    background: rgba(232, 220, 200, 0.6);
+    border: 2px solid #8b7355;
+    padding: 10px;
+    font-family: var(--body-font);
+    font-size: 1.1rem;
+    color: #3d2914;
+    width: 80%;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    outline: none;
+    border-radius: 2px;
+}
+
+.input-modal input:focus {
+    border-color: #3d2914;
+    background: rgba(232, 220, 200, 0.9);
+}
+
+.modal-btns {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.modal-btn {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    font-family: var(--body-font);
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    min-width: 100px;
+    border-radius: 2px;
+}
+
+.modal-btn.confirm {
+    background: #6b5344;
+    color: #f5efe6;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.modal-btn.confirm:hover {
+    background: #3d2914;
+}
+
+.modal-btn.cancel {
+    background: transparent;
+    border: 2px solid #5c4a32;
+    color: #5c4a32;
+}
+
+.modal-btn.cancel:hover {
+    background: rgba(107, 83, 68, 0.1);
+    color: #3d2914;
+    border-color: #3d2914;
 }

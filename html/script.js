@@ -292,6 +292,25 @@ window.spawnSpecificAnimal = function (id) {
     setTimeout(() => closeMenu(), 100);
 };
 
+// Helper for Age
+function calculateAge(bornTime) {
+    if (!bornTime) return "Unknown";
+    const now = Math.floor(Date.now() / 1000); // Current unix timestamp
+    const diff = now - bornTime;
+    const days = Math.floor(diff / 86400); // 86400 seconds in a day
+
+    if (days < 0) return "0 Days"; // Clock drift protection
+    if (days === 0) return "0 Days";
+    if (days === 1) return "1 Day";
+    return days + " Days";
+}
+
+function formatModelName(model) {
+    if (!model) return "Unknown";
+    // Remove a_c_ prefix and underscores, then Title Case
+    return model.replace(/^a_c_/i, '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
+
 function openLivestockMenu(items) {
     hideAll();
     livestockContent.innerHTML = "";
@@ -300,25 +319,30 @@ function openLivestockMenu(items) {
         livestockContent.innerHTML = "<div style='width:100%;text-align:center;'>You have no animals.</div>";
     } else {
         items.forEach(item => {
-            // Ensure we have a valid ID to send
             let actualId = item.animalid || item.id;
+            let displayName = item.name || formatModelName(item.model);
+            let displayAge = calculateAge(item.born);
 
             const div = document.createElement('div');
             div.className = "item-card";
 
-            // Fallback if both are missing (should not happen if DB returns correct data)
             if (!actualId) {
                 console.error("Missing ID for item:", item);
                 actualId = "INVALID_ID";
             }
 
-            // Using inline onclick with the global function is often more robust in these simplified NUI browsers
+            // Updated Layout: Clean Name, Age, Spawn Button (No ID, No Type line)
             div.innerHTML = `
                  <div class="img-container" style="width:120px;height:120px;margin:0 auto;display:flex;align-items:center;justify-content:center;">
                     <img src="./assets/${item.model}.png" alt="${item.model}" style="max-width:100%;max-height:100%;" onerror="handleImageError(this)">
                  </div>
-                <div class="item-title">${item.model}</div>
-                <div class="item-price">ID: ${actualId}</div>
+                
+                <div class="item-title" onclick="openRenameModal('${actualId}', '${displayName}')" style="cursor:pointer; text-decoration:underline; font-size: 1.2rem; margin-bottom: 5px;">
+                    ${displayName} <i class="fas fa-pen" style="font-size:0.8rem; margin-left:5px; color:#5c4a32;"></i>
+                </div>
+                
+                <div style="font-size:0.9rem; color:#5c4a32; margin-bottom:15px; font-weight:bold;">Age: ${displayAge}</div>
+                
                 <button class="item-btn" type="button" onclick="window.spawnSpecificAnimal('${actualId}')">Spawn</button>
             `;
 
@@ -326,6 +350,47 @@ function openLivestockMenu(items) {
         });
     }
     livestockMenu.classList.remove('hidden');
+}
+
+// Rename Variables
+let currentRenameId = null;
+
+function openRenameModal(animalId, currentName) {
+    currentRenameId = animalId;
+    const input = document.getElementById('rename-input');
+    input.value = currentName;
+    document.getElementById('rename-modal').classList.remove('hidden');
+    input.focus();
+}
+
+function closeRenameModal() {
+    document.getElementById('rename-modal').classList.add('hidden');
+    currentRenameId = null;
+}
+
+function submitRename() {
+    if (!currentRenameId) return;
+
+    const input = document.getElementById('rename-input');
+    const newName = input.value.trim();
+
+    if (!newName) return;
+
+    // Post to Client
+    fetch(`https://${GetParentResourceName()}/renameAnimal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+        body: JSON.stringify({
+            animalId: currentRenameId,
+            newName: newName
+        })
+    }).then(resp => resp.json()).then(resp => {
+        // Refresh menu? For now just close, user will likely reopen to see changes or we could request refresh
+        // But we don't have direct refresh trigger here easily without requesting data again.
+        // Ideally we update the DOM directly for immediate feedback or close menu.
+        closeRenameModal();
+        closeMenu(); // Close main menu to force user to reopen and fetch fresh data effectively
+    });
 }
 
 function openBossMenu(data) {
@@ -432,12 +497,12 @@ function openAnimalStatus(data) {
             </div>
         </div>
 
-        <div class="status-info">
+        <div class="status-info" style="color: #3e2723; font-weight: bold; font-size: 1.1rem; margin-top: 20px;">
             <span><strong>Age:</strong> ${data.age} days</span>
             <span><strong>Gender:</strong> ${data.gender}</span>
         </div>
         
-        <div style="margin-top:10px; text-align:center; font-family:var(--body-font); font-weight:bold; color: var(--gold); border-top: 1px solid var(--gold-dim); padding-top: 10px; font-size: 1.1rem; text-shadow: 1px 1px 2px black;">
+        <div style="margin-top:15px; text-align:center; font-family:var(--body-font); font-weight:800; color: #3e2723; border-top: 1px solid #5d403755; padding-top: 15px; font-size: 1.2rem;">
             ${(function () {
             if (data.nextGrowth === "Fully Grown") return "Status: Fully Grown";
             if (data.hunger < 30) return "Growth Paused (Needs Food)";
@@ -741,4 +806,3 @@ function confirmCraft() {
     closeCraftModal();
     closeMenu();
 }
-

@@ -86,34 +86,46 @@ function SetupAnimalTarget(ped, animalId, animalData)
             icon = 'fa-solid fa-wheat',
             label = 'Feed Animal',
             onSelect = function()
-                Citizen.CreateThread(function()
-                    local playerPed = PlayerPedId()
-                    ClearPedTasksImmediately(playerPed)
-                    SetCurrentPedWeapon(playerPed, GetHashKey('WEAPON_UNARMED'), true)
-                    Wait(200)
-
-                    -- Use Native Scenario for Pouring Feed (Detailed and reliable)
-                    -- WORLD_HUMAN_BUCKET_POUR_LOW creates a bucket and pours from it
-                    TaskStartScenarioInPlace(playerPed, GetHashKey('WORLD_HUMAN_BUCKET_POUR_LOW'), -1, true, false, false, false)
-                    
-                    -- Custom UI
-                    SendNUIMessage({
-                        action = "openProgressBar",
-                        duration = 5000,
-                        label = "Feeding Animal..."
-                    })
-                    
-                    -- Wait and Disable Controls
-                    local endTime = GetGameTimer() + 5000
-                    while GetGameTimer() < endTime do
-                        DisableAllControlActions(0)
-                        EnableControlAction(0, 1, true) -- Look LR
-                        EnableControlAction(0, 2, true) -- Look UD
-                        Wait(0)
+                RSGCore.Functions.TriggerCallback('rsg-ranch:server:hasFeed', function(hasItem)
+                    if not hasItem then
+                        lib.notify({title = 'Feeding Failed', description = 'You need Animal Feed to do this.', type = 'error'})
+                        return
                     end
 
-                    ClearPedTasks(playerPed)
-                    TriggerServerEvent('rsg-ranch:server:feedAnimal', animalId)
+                    Citizen.CreateThread(function()
+                        local playerPed = PlayerPedId()
+                        
+                        -- Force clear any previous tasks
+                        ClearPedTasksImmediately(playerPed)
+                        SetCurrentPedWeapon(playerPed, GetHashKey('WEAPON_UNARMED'), true)
+                        Wait(200)
+
+                        -- Use Native Scenario
+                        TaskStartScenarioInPlace(playerPed, GetHashKey('WORLD_HUMAN_BUCKET_POUR_LOW'), -1, true, false, false, false)
+                        
+                        -- Custom UI
+                        SendNUIMessage({
+                            action = "openProgressBar",
+                            duration = 5000,
+                            label = "Feeding Animal..."
+                        })
+                        
+                        -- Wait and Disable Controls
+                        local endTime = GetGameTimer() + 5000
+                        while GetGameTimer() < endTime do
+                            DisableAllControlActions(0)
+                            EnableControlAction(0, 1, true) -- Look LR
+                            EnableControlAction(0, 2, true) -- Look UD
+                            Wait(0)
+                        end
+
+                        -- Properly Clear Task
+                        ClearPedTasks(playerPed) 
+                        Wait(100) -- Small buffer
+                        ClearPedTasks(playerPed) -- Double tap to ensure prop drop
+
+                        TriggerServerEvent('rsg-ranch:server:feedAnimal', animalId)
+                    end)
                 end)
             end
         },

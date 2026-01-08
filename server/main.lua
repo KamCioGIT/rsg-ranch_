@@ -64,8 +64,8 @@ RegisterNetEvent('rsg-ranch:server:buyItem', function(data)
                 exists = oxmysql:scalarSync('SELECT 1 FROM rsg_ranch_animals WHERE animalid = ?', {animalId})
             end
             
-            oxmysql:insert('INSERT INTO rsg_ranch_animals (animalid, model, pos_x, pos_y, pos_z, pos_w, scale, age, ranchid, born) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', {
-                animalId, model, spawnCoords.x, spawnCoords.y, spawnCoords.z, spawnCoords.w, startScale, 0, ranchId, os.time()
+            oxmysql:insert('INSERT INTO rsg_ranch_animals (animalid, model, pos_x, pos_y, pos_z, pos_w, scale, age, ranchid, born, name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', {
+                animalId, model, spawnCoords.x, spawnCoords.y, spawnCoords.z, spawnCoords.w, startScale, 0, ranchId, os.time(), data.label or model
             })
         end
 
@@ -596,4 +596,46 @@ end)
 CreateThread(function()
     Wait(1000)
     TriggerEvent('rsg-ranch:server:loadRanchObjects')
+
+    -- Migration: Ensure 'name' column exists
+    oxmysql:execute('SHOW COLUMNS FROM `rsg_ranch_animals` LIKE "name"', {}, function(result)
+        if not result or #result == 0 then
+            print('[Ranch System] Adding missing "name" column to rsg_ranch_animals...')
+            oxmysql:execute('ALTER TABLE `rsg_ranch_animals` ADD COLUMN `name` VARCHAR(50) DEFAULT NULL', {})
+        end
+    end)
+end)
+
+RegisterNetEvent('rsg-ranch:server:renameAnimal', function(data)
+    local src = source
+    local Player = RSGCore.Functions.GetPlayer(src)
+    if not Player then return end
+
+    local animalId = data.animalId
+    local newName = data.newName
+    local ranchId = Player.PlayerData.job.name
+
+    if not animalId or not newName then return end
+
+    -- Check ownership
+    local animal = oxmysql:singleSync('SELECT * FROM rsg_ranch_animals WHERE animalid = ? AND ranchid = ?', {animalId, ranchId})
+    if animal then
+        oxmysql:update('UPDATE rsg_ranch_animals SET name = ? WHERE animalid = ?', {newName, animalId})
+        TriggerClientEvent('ox_lib:notify', src, {title = 'Renamed', description = 'Animal renamed to ' .. newName, type = 'success'})
+    else
+        TriggerClientEvent('ox_lib:notify', src, {title = 'Error', description = 'Animal not found!', type = 'error'})
+    end
+end)
+
+RSGCore.Functions.CreateCallback('rsg-ranch:server:hasFeed', function(source, cb)
+    local src = source
+    local Player = RSGCore.Functions.GetPlayer(src)
+    if not Player then return cb(false) end
+    
+    local quantity = Player.Functions.GetItemByName(Config.FeedItem)
+    if quantity and quantity.amount >= 1 then
+        cb(true)
+    else
+        cb(false)
+    end
 end)

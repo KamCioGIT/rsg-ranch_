@@ -556,6 +556,11 @@ RegisterNUICallback('openStorage', function(data, cb)
     cb('ok')
 end)
 
+RegisterNUICallback('renameAnimal', function(data, cb)
+    TriggerServerEvent('rsg-ranch:server:renameAnimal', data)
+    cb('ok')
+end)
+
 
 AddEventHandler('onResourceStop', function(resourceName)
     if (GetCurrentResourceName() ~= resourceName) then return end
