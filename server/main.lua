@@ -451,6 +451,35 @@ RSGCore.Functions.CreateCallback('rsg-ranch:server:getOwnedAnimals', function(so
     end)
 end)
 
+RSGCore.Functions.CreateCallback('rsg-ranch:server:canCraft', function(source, cb, itemName, amount)
+    local src = source
+    local Player = RSGCore.Functions.GetPlayer(src)
+    if not Player then return cb(false) end
+    
+    amount = tonumber(amount) or 1
+    
+    local recipe = nil
+    for _, r in ipairs(Config.CraftingRecipes) do
+        if r.item == itemName then
+            recipe = r
+            break
+        end
+    end
+    
+    if not recipe then return cb(false) end
+    
+    -- Check Ingredients
+    for _, ing in ipairs(recipe.ingredients) do
+        local required = ing.amount * amount
+        local item = Player.Functions.GetItemByName(ing.item)
+        if not item or item.amount < required then
+            return cb(false)
+        end
+    end
+    
+    cb(true)
+end)
+
 RegisterNetEvent('rsg-ranch:server:craftItem', function(itemName, amount)
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)
@@ -471,7 +500,7 @@ RegisterNetEvent('rsg-ranch:server:craftItem', function(itemName, amount)
         return
     end
     
-    -- Check Ingredients
+    -- Check Ingredients (Double check for security)
     local hasIngredients = true
     for _, ing in ipairs(recipe.ingredients) do
         local required = ing.amount * amount

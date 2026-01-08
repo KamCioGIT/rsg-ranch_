@@ -207,14 +207,17 @@ function openBuyMenu(items) {
     items.forEach(item => {
         const div = document.createElement('div');
         div.className = "item-card";
+        // Increased image size from 64px to 120px
         div.innerHTML = `
-            <div class="img-container" style="width:64px;height:64px;margin:0 auto;display:flex;align-items:center;justify-content:center;">
+            <div class="img-container" style="width:120px;height:120px;margin:0 auto;display:flex;align-items:center;justify-content:center;">
                 <img src="./assets/${item.model}.png" alt="${item.label}" style="max-width:100%;max-height:100%;" onerror="handleImageError(this)">
             </div>
-            <div class="item-title">${item.label}</div>
+            <div class="item-title" style="margin-top:10px;">${item.label}</div>
             <div class="item-price">$${item.price} each</div>
-            <div style="margin: 10px 0;">
-                <input type="number" id="qty-${item.model}" class="qty-input-field" value="1" min="1" max="10">
+            <div style="margin: 10px 0; display:flex; align-items:center; justify-content:center; gap:5px;">
+                <button class="qty-btn" onclick="adjustBuyQuantity('${item.model}', -1)">-</button>
+                <input type="number" id="qty-${item.model}" class="qty-input-field" value="1" min="1" max="10" style="width:50px; text-align:center;">
+                <button class="qty-btn" onclick="adjustBuyQuantity('${item.model}', 1)">+</button>
             </div>
             <button class="item-btn" onclick="buyItem('${item.model}', ${item.price}, document.getElementById('qty-${item.model}').value)">Purchase</button>
         `;
@@ -222,6 +225,19 @@ function openBuyMenu(items) {
     });
 
     buyMenu.classList.remove('hidden');
+}
+
+function adjustBuyQuantity(model, delta) {
+    const input = document.getElementById(`qty-${model}`);
+    if (!input) return;
+
+    let val = parseInt(input.value) || 1;
+    val += delta;
+
+    if (val < 1) val = 1;
+    if (val > 10) val = 10; // Hard cap from server logic
+
+    input.value = val;
 }
 
 function handleImageError(img) {
@@ -254,7 +270,7 @@ function openSellMenu(items) {
         const div = document.createElement('div');
         div.className = "item-card";
         div.innerHTML = `
-             <div class="img-container" style="width:64px;height:64px;margin:0 auto;display:flex;align-items:center;justify-content:center;">
+             <div class="img-container" style="width:120px;height:120px;margin:0 auto;display:flex;align-items:center;justify-content:center;">
                 <img src="./assets/${item.model}.png" alt="${item.model}" style="max-width:100%;max-height:100%;" onerror="handleImageError(this)">
              </div>
             <div class="item-title">${item.label || item.model}</div>
@@ -298,7 +314,7 @@ function openLivestockMenu(items) {
 
             // Using inline onclick with the global function is often more robust in these simplified NUI browsers
             div.innerHTML = `
-                 <div class="img-container" style="width:64px;height:64px;margin:0 auto;display:flex;align-items:center;justify-content:center;">
+                 <div class="img-container" style="width:120px;height:120px;margin:0 auto;display:flex;align-items:center;justify-content:center;">
                     <img src="./assets/${item.model}.png" alt="${item.model}" style="max-width:100%;max-height:100%;" onerror="handleImageError(this)">
                  </div>
                 <div class="item-title">${item.model}</div>

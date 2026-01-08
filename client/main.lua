@@ -231,7 +231,49 @@ end)
 RegisterNUICallback('craftItem', function(data, cb)
     local item = data.item
     local amount = data.amount
-    TriggerServerEvent('rsg-ranch:server:craftItem', item, amount)
+    
+    RSGCore.Functions.TriggerCallback('rsg-ranch:server:canCraft', function(canCraft)
+        if canCraft then
+            -- Find recipe for details
+            local recipe = nil
+            for _, r in ipairs(Config.CraftingRecipes) do
+                if r.item == item then
+                    recipe = r
+                    break
+                end
+            end
+            
+            if recipe then
+                local label = recipe.label or item
+                local time = recipe.time or 5000
+                local animDict = recipe.animDict or 'mech_inventory@crafting@fallbacks'
+                local animName = recipe.animName or 'full_craft_and_stow'
+                
+                -- Adjust time for amount (optional, but realistic)
+                local totalTime = time * amount
+                
+                RSGCore.Functions.Progressbar("crafting_ranch", "Crafting " .. label, totalTime, false, true, {
+                    disableMovement = true,
+                    disableCarMovement = true,
+                    disableMouse = false,
+                    disableCombat = true,
+                }, {
+                    animDict = animDict,
+                    anim = animName,
+                    flags = 1,
+                }, {}, {}, function() -- Done
+                    TriggerServerEvent('rsg-ranch:server:craftItem', item, amount)
+                end, function() -- Cancel
+                    lib.notify({title = 'Canceled', description = 'Crafting canceled.', type = 'error'})
+                end)
+            else
+                TriggerServerEvent('rsg-ranch:server:craftItem', item, amount) -- Fallback
+            end
+        else
+             lib.notify({title = 'Missing Ingredients', description = 'You do not have the required items.', type = 'error'})
+        end
+    end, item, amount)
+    
     cb('ok')
 end)
 
