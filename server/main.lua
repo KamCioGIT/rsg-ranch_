@@ -2,17 +2,8 @@ local RSGCore = exports['rsg-core']:GetCoreObject()
 local oxmysql = exports.oxmysql
 
 
-CreateThread(function()
-    if GetResourceState('ox_inventory') == 'started' then
-        for _, ranch in ipairs(Config.RanchLocations) do
-            local stashName = 'ranch_' .. ranch.jobaccess
-            local label = ranch.name .. ' Storage'
-            -- RegisterStash(id, label, slots, maxWeight, owner, groups, coords)
-            exports.ox_inventory:RegisterStash(stashName, label, 50, 4000000, nil, {[ranch.jobaccess] = 0})
-            -- print('[Ranch System] Registered stash: ' .. stashName)
-        end
-    end
-end)
+-- Stash registration removed to prevent crashes on non-standard inventory setups.
+-- Rewards are now sent directly to player inventory.
 
 
 RegisterNetEvent('rsg-ranch:server:buyItem', function(data)
@@ -79,7 +70,7 @@ end)
 
 RegisterNetEvent('rsg-ranch:server:sellItem', function(data)
     local src = source
-    -- print("[Ranch System] Processing Sell Request from Source: " .. src .. " for Animal ID: " .. tostring(data.id))
+    print("[RSG-RANCH] DEBUG: New Sell Logic Triggered for Source: " .. src)
     local Player = RSGCore.Functions.GetPlayer(src)
     if not Player then return end
 
@@ -126,16 +117,44 @@ RegisterNetEvent('rsg-ranch:server:sellItem', function(data)
 
         Player.Functions.AddMoney('cash', playerShare)
         
-        -- Carcass Logic
-        local carcassItem = Config.CarcassItems[model]
-        if carcassItem then
-            Player.Functions.AddItem(carcassItem, 1)
-            TriggerClientEvent('ox_lib:notify', src, {title = 'Received Carcass', description = 'You received a '..model..' carcass', type = 'success'})
+        -- NEW SELL REWARDS LOGIC (Replaces Carcass)
+        local rewardMsg = ""
+        print("[RSG-RANCH] DEBUG: Sell Progress: " .. progress .. " | Model: " .. tostring(model))
+        
+        if progress >= 1 then
+            local rewards = Config.SellRewards[model]
+            if rewards then
+                local stashName = 'ranch_' .. ranchId
+                print("[RSG-RANCH] DEBUG: Rewards found. Stash Name: " .. stashName)
+                
+                local itemsGiven = {}
+                
+                for _, reward in ipairs(rewards) do
+                    -- Fallback: Add to Player Inventory (Safest method for rsg-inventory/qb-inventory)
+                    if Player.Functions.AddItem(reward.item, reward.amount) then
+                        table.insert(itemsGiven, reward.amount .. "x " .. RSGCore.Shared.Items[reward.item].label)
+                        print("[RSG-RANCH] DEBUG: Added " .. reward.item .. " to player inventory.")
+                    else
+                        print("[RSG-RANCH] DEBUG: Failed to add " .. reward.item .. " to player inventory (Full?).")
+                        TriggerClientEvent('ox_lib:notify', src, {title = 'Inventory Full', description = 'Could not receive '..reward.item, type = 'error'})
+                    end
+                end
+                
+                if #itemsGiven > 0 then
+                    rewardMsg = " We've delivered " .. table.concat(itemsGiven, ", ") .. " to your inventory."
+                end
+                
+
+            else
+                print("[RSG-RANCH] DEBUG: No rewards configured for model: " .. tostring(model))
+            end
+        else
+            print("[RSG-RANCH] DEBUG: Animal not fully grown (Progress < 1). No rewards.")
         end
 
         oxmysql:execute('INSERT INTO rsg_ranch_funds (ranchid, funds) VALUES (?, ?) ON DUPLICATE KEY UPDATE funds = funds + ?', {ranchId, ranchShare, ranchShare})
         
-        TriggerClientEvent('ox_lib:notify', src, {title = 'Sale Successful', description = 'Sold for $' .. finalPrice .. ' (Received: $' .. playerShare .. ', Ranch: $' .. ranchShare .. ')', type = 'success'})
+        TriggerClientEvent('ox_lib:notify', src, {title = 'Sale Complete', description = 'Thank you for selling your fully grown animal!' .. rewardMsg, type = 'success'})
     else
         TriggerClientEvent('ox_lib:notify', src, {title = 'Sale Failed', description = 'Animal not found or already sold.', type = 'error'})
     end
@@ -638,4 +657,18 @@ RSGCore.Functions.CreateCallback('rsg-ranch:server:hasFeed', function(source, cb
     else
         cb(false)
     end
+end)
+
+-- Manure Collection
+RegisterNetEvent('rsg-ranch:server:collectManure', function()
+    local src = source
+    local Player = RSGCore.Functions.GetPlayer(src)
+    if not Player then return end
+
+    -- Check overlap/cooldown if desired, but for now just simple reward
+    -- Adding Probability or simple 1 item
+    local amount = 1
+    Player.Functions.AddItem('manure', amount)
+    TriggerClientEvent('rsg-inventory:client:ItemBox', src, RSGCore.Shared.Items['manure'], 'add', amount)
+    TriggerClientEvent('ox_lib:notify', src, {title = 'Ranch', description = 'You collected 1x Manure.', type = 'success'})
 end)

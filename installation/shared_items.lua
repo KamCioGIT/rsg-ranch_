@@ -24,3 +24,22 @@ sugar      = { name = 'sugar',      label = 'Sugar',      weight = 100,  type = 
 jam_raspberry    = { name = 'jam_raspberry',    label = 'Raspberry Jam',    weight = 200,  type = 'item', image = 'jam_raspberry.png',    unique = false, useable = true,  shouldClose = true, description = 'sweet raspberry preserve', hunger = 15 },
 jam_blackcurrant = { name = 'jam_blackcurrant', label = 'Blackcurrant Jam', weight = 200,  type = 'item', image = 'jam_blackcurrant.png', unique = false, useable = true,  shouldClose = true, description = 'tart blackcurrant preserve', hunger = 15 },
 jam_peach        = { name = 'jam_peach',        label = 'Peach Jam',        weight = 200,  type = 'item', image = 'jam_peach.png',        unique = false, useable = true,  shouldClose = true, description = 'sweet peach preserve', hunger = 15 },
+cheese           = { name = 'cheese',           label = 'Cheese',           weight = 200,  type = 'item', image = 'cheese.png',           unique = false, useable = true,  shouldClose = true, description = 'fresh cheese', hunger = 10 },
+butter           = { name = 'butter',           label = 'Butter',           weight = 100,  type = 'item', image = 'butter.png',           unique = false, useable = true,  shouldClose = true, description = 'fresh butter', hunger = 5 },
+
+-----------------------------------------------
+-- FARMING & INGREDIENTS
+-----------------------------------------------
+wheat            = { name = 'wheat',            label = 'Wheat',            weight = 100,  type = 'item', image = 'wheat.png',            unique = false, useable = false, shouldClose = true, description = 'harvested wheat' },
+corn             = { name = 'corn',             label = 'Corn',             weight = 100,  type = 'item', image = 'corn.png',             unique = false, useable = false, shouldClose = true, description = 'harvested corn' },
+cana             = { name = 'cana',             label = 'Sugarcane',        weight = 100,  type = 'item', image = 'cana.png',             unique = false, useable = false, shouldClose = true, description = 'sugar cane stalk' },
+red_raspberry    = { name = 'red_raspberry',    label = 'Raspberry',        weight = 50,   type = 'item', image = 'red_raspberry.png',    unique = false, useable = true,  shouldClose = true, description = 'fresh raspberry', hunger = 5 },
+black_currant    = { name = 'black_currant',    label = 'Blackcurrant',     weight = 50,   type = 'item', image = 'black_currant.png',    unique = false, useable = true,  shouldClose = true, description = 'fresh blackcurrant', hunger = 5 },
+consumable_peach = { name = 'consumable_peach', label = 'Peach',            weight = 100,  type = 'item', image = 'consumable_peach.png', unique = false, useable = true,  shouldClose = true, description = 'fresh peach', hunger = 10 },
+
+-----------------------------------------------
+-- EXTRA ANIMAL PRODUCTS
+-----------------------------------------------
+feather          = { name = 'feather',          label = 'Feather',          weight = 10,   type = 'item', image = 'feather.png',          unique = false, useable = false, shouldClose = true, description = 'bird feather' },
+manure           = { name = 'manure',           label = 'Manure',           weight = 200,  type = 'item', image = 'manure.png',           unique = false, useable = false, shouldClose = true, description = 'animal waste' },
+raw_meat         = { name = 'raw_meat',         label = 'Raw Meat',         weight = 500,  type = 'item', image = 'meat.png',             unique = false, useable = false, shouldClose = true, description = 'raw animal meat' },

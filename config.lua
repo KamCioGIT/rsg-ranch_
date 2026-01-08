@@ -223,36 +223,37 @@ Config.CarcassItems = {
 }
 
 -- Butchering Rewards
-Config.ButcherRewards = {
-    ['carcass_cow'] = {
+-- Rewards for selling FULLY GROWN animals
+Config.SellRewards = {
+    ['a_c_cow'] = {
         { item = 'raw_meat', amount = 10 },
-        { item = 'hide_cow_1star', amount = 1 }, -- Assuming 1 star for generic
-        { item = 'milk', amount = 1 } -- Request
+        { item = 'milk', amount = 5 },
+        { item = 'leather', amount = 2 }
     },
-    ['carcass_bull'] = {
-        { item = 'raw_meat', amount = 12 },
-        { item = 'hide_bull_1star', amount = 1 }
+    ['a_c_bull_01'] = {
+        { item = 'raw_meat', amount = 15 },
+        { item = 'leather', amount = 3 }
     },
-    ['carcass_pig'] = {
+    ['a_c_pig_01'] = {
+        { item = 'raw_meat', amount = 8 },
+        { item = 'leather', amount = 1 }
+    },
+    ['a_c_sheep_01'] = {
         { item = 'raw_meat', amount = 6 },
-        { item = 'skin_pig_1star', amount = 1 }
+        { item = 'wool', amount = 5 }
     },
-    ['carcass_sheep'] = {
-        { item = 'cooked_meat', amount = 4 }, -- Mutton isn't in default items, using cooked or raw
-        { item = 'wool', amount = 2 }
+    ['a_c_goat_01'] = {
+        { item = 'raw_meat', amount = 5 },
+        { item = 'milk', amount = 2 }
     },
-    ['carcass_goat'] = {
-        { item = 'raw_meat', amount = 3 },
-        { item = 'hide_goat_1star', amount = 1 }
-    },
-    ['carcass_chicken'] = {
+    ['a_c_chicken_01'] = {
         { item = 'raw_meat', amount = 2 },
-        { item = 'feather', amount = 3 },
-        { item = 'egg', amount = 2 } -- Request
-    },
-    ['carcass_rooster'] = {
-        { item = 'raw_meat', amount = 2 },
+        { item = 'egg', amount = 4 },
         { item = 'feather', amount = 5 }
+    },
+    ['a_c_rooster_01'] = {
+        { item = 'raw_meat', amount = 3 },
+        { item = 'feather', amount = 8 }
     }
 }
     
@@ -292,7 +293,7 @@ Config.CraftingRecipes = {
         label = 'Animal Feed', 
         ingredients = { 
             { item = 'wheat', amount = 1, label = 'Wheat' },
-            { item = 'Corn', amount = 1, label = 'Corn' } 
+            { item = 'corn', amount = 1, label = 'Corn' } 
         },
         time = 3000,
         animDict = 'mech_inventory@crafting@fallbacks',
@@ -416,5 +417,25 @@ Config.CraftingRecipes = {
 
 Config.ButcherProp = 'p_table04x'
 Config.ButcherTables = {}
+
+Config.ManureLocations = {
+    vector3(-2396.7, -2469.1, 60.3), -- MacFarlane
+    vector3(-2416.5, -2395.7, 61.4), -- MacFarlane
+    vector3(-5199.8, -2161.9, 12.1), -- Gaptooth
+    vector3(-2544.7, 395.2, 148.3),  -- Pronghorn
+    vector3(-2544.6, 403.5, 148.6),  -- Pronghorn (New)
+    vector3(-2221.5, 727.4, 123.0),  -- New Location 1
+    vector3(-2223.9, 738.2, 123.5),  -- New Location 2
+    vector3(-868.3, 341.1, 96.6),    -- New Location 3
+    vector3(-872.0, 318.8, 96.9),    -- New Location 4
+    vector3(-417.7, 1755.9, 216.3),  -- New Location 5
+    vector3(-411.0, 1713.8, 216.4),  -- New Location 6
+    vector3(1394.4, 302.0, 88.5),    -- New Location 7
+    vector3(1393.7, 288.5, 88.7),    -- New Location 8
+    vector3(2265.2, -119.7, 46.5),   -- New Location 9
+    vector3(2251.6, -119.7, 46.8),   -- New Location 10
+    vector3(1364.8, -841.7, 71.0),   -- New Location 11
+    vector3(1406.4, -873.0, 62.7)    -- New Location 12
+}
 
 

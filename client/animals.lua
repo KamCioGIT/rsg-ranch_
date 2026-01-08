@@ -255,61 +255,106 @@ RegisterNetEvent('RSGCore:Client:OnPlayerLoaded', function()
     TriggerServerEvent('rsg-ranch:server:refreshAnimals')
 end)
 
--- Helper for commands
-local function GetClosestRanchAnimal()
-    local ped = PlayerPedId()
-    local coords = GetEntityCoords(ped)
-    local closestDist = 50.0 
-    local closestAnimal = nil
-    
-    local handle, animal = FindFirstPed()
-    local success = false
-    repeat
-        local pos = GetEntityCoords(animal)
-        local dist = #(coords - pos)
-        if dist < closestDist and animal ~= ped and not IsPedAPlayer(animal) and not IsPedHuman(animal) then
-            closestDist = dist
-            closestAnimal = animal
-        end
-        success, animal = FindNextPed(handle)
-    until not success
-    EndFindPed(handle)
-    
-    return closestAnimal
+-- Helper to check valid ranch jobs
+local function isRancher(jobName)
+    if not jobName then return false end
+    if jobName == 'rancher' then return true end
+    for _, ranch in pairs(Config.RanchLocations) do
+        if jobName == ranch.jobaccess then return true end
+    end
+    return false
 end
 
-RegisterCommand('rfollow', function()
-    local animal = GetClosestRanchAnimal()
-    if animal then
-         local playerPed = PlayerPedId()
-         FreezeEntityPosition(animal, false)
-         ClearPedTasks(animal)
-         TaskFollowToOffsetOfEntity(animal, playerPed, 0.0, -2.0, 0.0, 1.5, -1, 2.0, 1)
-         lib.notify({description = 'Animal following.', type = 'success'})
+local isHerding = false
+local herdedAnimals = {}
+
+local function StopHerding()
+    if not isHerding then return end
+    
+    for _, animalPed in ipairs(herdedAnimals) do
+        if DoesEntityExist(animalPed) then
+            ClearPedTasks(animalPed)
+            if Config.AnimalWanderingEnabled then
+                TaskWanderStandard(animalPed, 10.0, 10)
+            end
+        end
+    end
+    herdedAnimals = {}
+    isHerding = false
+    lib.notify({title = 'Herding Finished', description = 'The animals have stopped following you.', type = 'inform'})
+end
+
+RegisterCommand('herd', function()
+    local Player = RSGCore.Functions.GetPlayerData()
+    if not Player or not Player.job or not isRancher(Player.job.name) then
+        lib.notify({title = 'Access Denied', description = 'You must be a rancher to use this.', type = 'error'})
+        return
+    end
+
+    if isHerding then
+        lib.notify({description = 'You are already herding animals!', type = 'error'})
+        return
+    end
+
+    local ped = PlayerPedId()
+    local coords = GetEntityCoords(ped)
+    herdedAnimals = {} -- Reset
+    local count = 0
+    
+    -- Find animals in range (using spawnedMap)
+    for id, animalPed in pairs(spawnedMap) do
+        if DoesEntityExist(animalPed) and not IsEntityDead(animalPed) then
+            -- STRICT FILTER: Verify ownership via cache
+            local isStatsMine = false
+            for _, aData in ipairs(animalDataCache) do
+                -- Compare IDs loosely (string vs number safe) and verify ranchid matches job
+                if tonumber(aData.animalid) == tonumber(id) and aData.ranchid == Player.job.name then
+                    isStatsMine = true
+                    break
+                end
+            end
+
+            if isStatsMine then
+                local pos = GetEntityCoords(animalPed)
+                if #(coords - pos) < 50.0 then
+                    FreezeEntityPosition(animalPed, false)
+                    ClearPedTasks(animalPed)
+                    -- Follow player: Entity, Target, OffsetX, OffsetY, OffsetZ, Speed, Timeout, StoppingRange, Persistence
+                    TaskFollowToOffsetOfEntity(animalPed, ped, 0.0, -3.0, 0.0, 1.5, -1, 3.0, 1)
+                    table.insert(herdedAnimals, animalPed)
+                    count = count + 1
+                end
+            end
+        end
+    end
+
+    if count > 0 then
+        isHerding = true
+        lib.notify({title = 'Herding Started', description = 'You started herding ' .. count .. ' animals. They will follow for 15 minutes.', type = 'success', duration = 10000})
+        
+        -- Start 15 minute timer
+        CreateThread(function()
+            local endTime = GetGameTimer() + 900000 -- 15 minutes
+            
+            while GetGameTimer() < endTime and isHerding do
+                Wait(2000)
+            end
+            
+            -- Timer expired naturally (and wasn't stopped manually)
+            if isHerding then
+                StopHerding()
+            end
+        end)
     else
-         lib.notify({description = 'No animal nearby.', type = 'error'})
+        lib.notify({description = 'No ranch animals found nearby (50m).', type = 'error'})
     end
 end)
 
-RegisterCommand('rstay', function()
-    local animal = GetClosestRanchAnimal()
-    if animal then
-         ClearPedTasks(animal)
-         FreezeEntityPosition(animal, true)
-         lib.notify({description = 'Animal staying.', type = 'inform'})
+RegisterCommand('stopherd', function()
+    if isHerding then
+        StopHerding() -- Call the helper to actually stop them
     else
-         lib.notify({description = 'No animal nearby.', type = 'error'})
-    end
-end)
-
-RegisterCommand('rwander', function()
-    local animal = GetClosestRanchAnimal()
-    if animal then
-         FreezeEntityPosition(animal, false)
-         TaskWanderStandard(animal, 10.0, 10)
-         lib.notify({description = 'Animal wandering.', type = 'inform'})
-    else
-         lib.notify({description = 'No animal nearby.', type = 'error'})
+        lib.notify({description = 'You are not herding.', type = 'error'})
     end
 end)
 

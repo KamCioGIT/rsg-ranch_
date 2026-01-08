@@ -577,3 +577,49 @@ AddEventHandler('onResourceStop', function(resourceName)
     -- but explicit removal is good practice if IDs were tracked, here we just kill the peds)
 end)
 
+-- Manure Collection Logic
+CreateThread(function()
+    for i, coords in ipairs(Config.ManureLocations) do
+        exports.ox_target:addSphereZone({
+            coords = coords,
+            radius = 2.0,
+            debug = false,
+            options = {
+                {
+                    name = 'collect_manure_' .. i,
+                    icon = 'fa-solid fa-poop',
+                    label = 'Collect Manure',
+                    onSelect = function()
+                        local hasShovel = RSGCore.Functions.HasItem('shovel')
+                        if not hasShovel then
+                            lib.notify({title = 'Missing Item', description = 'You need a shovel to dig manure!', type = 'error'})
+                            return
+                        end
+
+                        if lib.progressBar({
+                            duration = 5000,
+                            label = 'Collecting Manure...',
+                            useWhileDead = false,
+                            canCancel = true,
+                            disable = {
+                                car = true,
+                                move = true,
+                                combat = true,
+                            },
+                            anim = {
+                                dict = 'amb_work@world_human_gravedig@working@male_b@base',
+                                clip = 'base',
+                                flag = 1,
+                            },
+                        }) then
+                            TriggerServerEvent('rsg-ranch:server:collectManure')
+                        else
+                            lib.notify({title = 'Canceled', description = 'Collection canceled.', type = 'error'})
+                        end
+                    end
+                }
+            }
+        })
+    end
+end)
+
