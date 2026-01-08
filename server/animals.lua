@@ -59,12 +59,21 @@ RegisterNetEvent('rsg-ranch:server:collectProduct', function(animalId)
     oxmysql:query('SELECT model, product_ready FROM rsg_ranch_animals WHERE animalid = ?', {animalId}, function(result)
         if result and result[1] then
             local model = result[1].model
+            local isReady = result[1].product_ready
             local productData = Config.AnimalProducts[model]
             
             if productData then
-                -- Add item
-                Player.Functions.AddItem(productData.product, productData.amount)
-                TriggerClientEvent('ox_lib:notify', src, {title = 'Collected ' .. productData.product, type = 'success'})
+                if isReady == 1 then
+                    -- Add item & Reset DB
+                    if Player.Functions.AddItem(productData.product, productData.amount) then
+                        oxmysql:execute('UPDATE rsg_ranch_animals SET product_ready = 0, last_production = ? WHERE animalid = ?', {os.time(), animalId})
+                        TriggerClientEvent('ox_lib:notify', src, {title = 'Collected ' .. productData.product, type = 'success'})
+                    else
+                        TriggerClientEvent('ox_lib:notify', src, {title = 'Inventory Full', type = 'error'})
+                    end
+                else
+                    TriggerClientEvent('ox_lib:notify', src, {title = 'Not ready yet', description = 'Come back later.', type = 'error'})
+                end
             else
                 TriggerClientEvent('ox_lib:notify', src, {title = 'Nothing to collect', type = 'error'})
             end
@@ -126,13 +135,12 @@ RegisterNetEvent('rsg-ranch:server:spawnSpecificAnimal', function(animalId)
         if rId == ranchId then count = count + 1 end
     end
     
+    
     if count >= 5 then
         TriggerClientEvent('ox_lib:notify', src, {title = 'Limit Reached', description = 'Max 5 animals allowed at once.', type = 'error'})
         return
     end
-    
-    -- print('[Ranch System] DEBUG: spawnSpecificAnimal request for ID: ' .. id)
-    
+        
     if DeadAnimals[id] and os.time() < DeadAnimals[id] then
         local left = DeadAnimals[id] - os.time()
         TriggerClientEvent('ox_lib:notify', src, {title = 'Cooldown', description = 'Animal is recovering. Wait '..left..'s', type = 'error'})

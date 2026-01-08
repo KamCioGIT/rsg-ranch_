@@ -14,7 +14,7 @@ shared_scripts {
 client_scripts {
     'client/main.lua',
     'client/animals.lua',
-    'client/butcher.lua'
+    'client/crafting.lua'
 }
 
 server_scripts {
@@ -22,7 +22,7 @@ server_scripts {
     'server/main.lua',
     'server/animals.lua',
     'server/growth.lua',
-    'server/butcher.lua'
+    'server/crafting.lua'
 }
 
 ui_page 'html/index.html'

@@ -8,7 +8,6 @@ local oxmysql = exports.oxmysql
 
 RegisterNetEvent('rsg-ranch:server:buyItem', function(data)
     local src = source
-    -- print("[Ranch System] Processing Buy Request from Source: " .. src)
     local Player = RSGCore.Functions.GetPlayer(src)
     if not Player then return end
 
@@ -21,56 +20,60 @@ RegisterNetEvent('rsg-ranch:server:buyItem', function(data)
 
     local PlayerJob = Player.PlayerData.job
     local ranchId = PlayerJob.name
-    
-
-    local count = oxmysql:scalarSync('SELECT COUNT(*) FROM rsg_ranch_animals WHERE ranchid = ?', {ranchId}) or 0
-    if (count + amount) > 20 then
-        TriggerClientEvent('ox_lib:notify', src, {title = 'Limit Reached', description = 'You cannot have more than 20 animals. Current: '..count, type = 'error'})
-        return
-    end
-    
     local totalPrice = price * amount
-
-    if Player.Functions.RemoveMoney('cash', totalPrice) then
-        local startScale = Config.Growth.DefaultStartScale
-        local spawnCoords = vector4(0,0,0,0)
-        for _, ranch in ipairs(Config.RanchLocations) do
-            if ranch.jobaccess == ranchId then
-                spawnCoords = ranch.spawnpoint
-                break
-            end
+    
+    -- ASYNC: Check animal count without blocking
+    oxmysql:scalar('SELECT COUNT(*) FROM rsg_ranch_animals WHERE ranchid = ?', {ranchId}, function(count)
+        count = count or 0
+        
+        if (count + amount) > 20 then
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Limit Reached', description = 'You cannot have more than 20 animals. Current: '..count, type = 'error'})
+            return
         end
         
-        if spawnCoords.x == 0 then
-             Player.Functions.AddMoney('cash', totalPrice)
-             TriggerClientEvent('ox_lib:notify', src, {title = 'Purchase Failed', description = 'You do not own a ranch!', type = 'error'})
-             return
-        end
+        -- Re-fetch player in callback (they might have left)
+        local PlayerNow = RSGCore.Functions.GetPlayer(src)
+        if not PlayerNow then return end
         
-        for i=1, amount do
-            local animalId = math.random(Config.ANIMAL_ID_MIN, Config.ANIMAL_ID_MAX)
-            local exists = oxmysql:scalarSync('SELECT 1 FROM rsg_ranch_animals WHERE animalid = ?', {animalId})
-            while exists do
-                animalId = math.random(Config.ANIMAL_ID_MIN, Config.ANIMAL_ID_MAX)
-                exists = oxmysql:scalarSync('SELECT 1 FROM rsg_ranch_animals WHERE animalid = ?', {animalId})
+        if PlayerNow.Functions.RemoveMoney('cash', totalPrice) then
+            local startScale = Config.Growth.DefaultStartScale
+            local spawnCoords = vector4(0,0,0,0)
+            
+            for _, ranch in ipairs(Config.RanchLocations) do
+                if ranch.jobaccess == ranchId then
+                    spawnCoords = ranch.spawnpoint
+                    break
+                end
             end
             
-            oxmysql:insert('INSERT INTO rsg_ranch_animals (animalid, model, pos_x, pos_y, pos_z, pos_w, scale, age, ranchid, born, name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', {
-                animalId, model, spawnCoords.x, spawnCoords.y, spawnCoords.z, spawnCoords.w, startScale, 0, ranchId, os.time(), data.label or model
-            })
-        end
+            if spawnCoords.x == 0 then
+                PlayerNow.Functions.AddMoney('cash', totalPrice)
+                TriggerClientEvent('ox_lib:notify', src, {title = 'Purchase Failed', description = 'You do not own a ranch!', type = 'error'})
+                return
+            end
+            
+            -- OPTIMIZED: Generate unique IDs using timestamp + random (no sync loop)
+            -- Format: TIMESTAMP_MILLIS + RANDOM(1-999) + LOOP_INDEX
+            local baseId = os.time() * 10000
+            
+            for i = 1, amount do
+                local animalId = baseId + math.random(1, 9999) + (i * 10)
+                
+                oxmysql:insert('INSERT INTO rsg_ranch_animals (animalid, model, pos_x, pos_y, pos_z, pos_w, scale, age, ranchid, born, name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', {
+                    animalId, model, spawnCoords.x, spawnCoords.y, spawnCoords.z, spawnCoords.w, startScale, 0, ranchId, os.time(), data.label or model
+                })
+            end
 
-        -- print("Player " .. src .. " bought " .. amount .. " " .. model .. " for $" .. totalPrice)
-        TriggerClientEvent('ox_lib:notify', src, {title = 'Purchase Successful', description = 'Bought '..amount..' animals.', type = 'success'})
-    else
-        TriggerClientEvent('ox_lib:notify', src, {title = 'Purchase Failed', description = 'Not enough cash! Need $'..totalPrice, type = 'error'})
-    end
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Purchase Successful', description = 'Bought '..amount..' animals.', type = 'success'})
+        else
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Purchase Failed', description = 'Not enough cash! Need $'..totalPrice, type = 'error'})
+        end
+    end)
 end)
 
 
 RegisterNetEvent('rsg-ranch:server:sellItem', function(data)
     local src = source
-    print("[RSG-RANCH] DEBUG: New Sell Logic Triggered for Source: " .. src)
     local Player = RSGCore.Functions.GetPlayer(src)
     if not Player then return end
 
@@ -78,13 +81,20 @@ RegisterNetEvent('rsg-ranch:server:sellItem', function(data)
     local PlayerJob = Player.PlayerData.job
     local ranchId = PlayerJob.name
     
-    local result = oxmysql:singleSync('SELECT * FROM rsg_ranch_animals WHERE animalid = ? AND ranchid = ?', {animalId, ranchId})
-    
-    if result then
+    -- ASYNC: Fetch animal without blocking
+    oxmysql:single('SELECT * FROM rsg_ranch_animals WHERE animalid = ? AND ranchid = ?', {animalId, ranchId}, function(result)
+        if not result then
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Sale Failed', description = 'Animal not found or already sold.', type = 'error'})
+            return
+        end
+        
+        -- Re-fetch player in callback
+        local PlayerNow = RSGCore.Functions.GetPlayer(src)
+        if not PlayerNow then return end
+        
         local model = result.model
         local scale = tonumber(result.scale) or Config.Growth.DefaultStartScale
         
-
         local buyPrice = 0
         for _, item in ipairs(Config.AnimalsToBuy) do
             if item.model == model then
@@ -93,10 +103,8 @@ RegisterNetEvent('rsg-ranch:server:sellItem', function(data)
             end
         end
         
-
         local maxSellPrice = Config.BaseSellPrices[model] or (buyPrice * 2)
         
-
         local startScale = Config.Growth.DefaultStartScale
         local maxScale = Config.Growth.DefaultMaxScale
         local progress = (scale - startScale) / (maxScale - startScale)
@@ -106,7 +114,6 @@ RegisterNetEvent('rsg-ranch:server:sellItem', function(data)
         local startValue = buyPrice * 0.6
         local finalPrice = math.floor(startValue + ((maxSellPrice - startValue) * progress))
         
-
         local ranchShare = math.floor(finalPrice * 0.25) -- 25% to Ranch
         local playerShare = finalPrice - ranchShare
         
@@ -114,28 +121,22 @@ RegisterNetEvent('rsg-ranch:server:sellItem', function(data)
         -- Clean up from global spawn tracker if exists
         TriggerEvent('rsg-ranch:server:despawnAnimal', animalId)
         
-
-        Player.Functions.AddMoney('cash', playerShare)
+        PlayerNow.Functions.AddMoney('cash', playerShare)
         
-        -- NEW SELL REWARDS LOGIC (Replaces Carcass)
+        -- SELL REWARDS LOGIC
         local rewardMsg = ""
-        print("[RSG-RANCH] DEBUG: Sell Progress: " .. progress .. " | Model: " .. tostring(model))
         
         if progress >= 1 then
             local rewards = Config.SellRewards[model]
             if rewards then
-                local stashName = 'ranch_' .. ranchId
-                print("[RSG-RANCH] DEBUG: Rewards found. Stash Name: " .. stashName)
-                
                 local itemsGiven = {}
                 
                 for _, reward in ipairs(rewards) do
-                    -- Fallback: Add to Player Inventory (Safest method for rsg-inventory/qb-inventory)
-                    if Player.Functions.AddItem(reward.item, reward.amount) then
-                        table.insert(itemsGiven, reward.amount .. "x " .. RSGCore.Shared.Items[reward.item].label)
-                        print("[RSG-RANCH] DEBUG: Added " .. reward.item .. " to player inventory.")
+                    if PlayerNow.Functions.AddItem(reward.item, reward.amount) then
+                        local itemData = RSGCore.Shared.Items[reward.item]
+                        local itemLabel = itemData and itemData.label or reward.item
+                        table.insert(itemsGiven, reward.amount .. "x " .. itemLabel)
                     else
-                        print("[RSG-RANCH] DEBUG: Failed to add " .. reward.item .. " to player inventory (Full?).")
                         TriggerClientEvent('ox_lib:notify', src, {title = 'Inventory Full', description = 'Could not receive '..reward.item, type = 'error'})
                     end
                 end
@@ -143,26 +144,25 @@ RegisterNetEvent('rsg-ranch:server:sellItem', function(data)
                 if #itemsGiven > 0 then
                     rewardMsg = " We've delivered " .. table.concat(itemsGiven, ", ") .. " to your inventory."
                 end
-                
-
-            else
-                print("[RSG-RANCH] DEBUG: No rewards configured for model: " .. tostring(model))
             end
-        else
-            print("[RSG-RANCH] DEBUG: Animal not fully grown (Progress < 1). No rewards.")
         end
 
         oxmysql:execute('INSERT INTO rsg_ranch_funds (ranchid, funds) VALUES (?, ?) ON DUPLICATE KEY UPDATE funds = funds + ?', {ranchId, ranchShare, ranchShare})
         
-        TriggerClientEvent('ox_lib:notify', src, {title = 'Sale Complete', description = 'Thank you for selling your fully grown animal!' .. rewardMsg, type = 'success'})
-    else
-        TriggerClientEvent('ox_lib:notify', src, {title = 'Sale Failed', description = 'Animal not found or already sold.', type = 'error'})
-    end
+        -- Conditional notification based on growth
+        if progress >= 1 then
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Sale Complete', description = 'Thank you for selling your fully grown animal!' .. rewardMsg, type = 'success'})
+        else
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Sale Complete', description = 'Animal sold. Grow animals fully for bonus rewards!', type = 'success'})
+        end
+    end)
 end)
 
 RegisterNetEvent('rsg-ranch:server:withdrawFunds', function(amount)
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)
+    if not Player then return end
+    
     local ranchId = Player.PlayerData.job.name
     local grade = Player.PlayerData.job.grade.level
     
@@ -171,14 +171,21 @@ RegisterNetEvent('rsg-ranch:server:withdrawFunds', function(amount)
         return
     end
     
-    local funds = oxmysql:scalarSync('SELECT funds FROM rsg_ranch_funds WHERE ranchid = ?', {ranchId}) or 0
-    if funds >= amount then
-        oxmysql:update('UPDATE rsg_ranch_funds SET funds = funds - ? WHERE ranchid = ?', {amount, ranchId})
-        Player.Functions.AddMoney('cash', amount)
-        TriggerClientEvent('ox_lib:notify', src, {title = 'Withdrawn', description = '$'..amount, type = 'success'})
-    else
-        TriggerClientEvent('ox_lib:notify', src, {title = 'Insufficient Funds', type = 'error'})
-    end
+    -- ASYNC: Fetch funds without blocking
+    oxmysql:scalar('SELECT funds FROM rsg_ranch_funds WHERE ranchid = ?', {ranchId}, function(funds)
+        funds = funds or 0
+        
+        local PlayerNow = RSGCore.Functions.GetPlayer(src)
+        if not PlayerNow then return end
+        
+        if funds >= amount then
+            oxmysql:update('UPDATE rsg_ranch_funds SET funds = funds - ? WHERE ranchid = ?', {amount, ranchId})
+            PlayerNow.Functions.AddMoney('cash', amount)
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Withdrawn', description = '$'..amount, type = 'success'})
+        else
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Insufficient Funds', type = 'error'})
+        end
+    end)
 end)
 
 RegisterNetEvent('rsg-ranch:server:depositFunds', function(amount)
@@ -261,42 +268,43 @@ RegisterNetEvent('rsg-ranch:server:fireEmployee', function(targetData)
 
     local citizenid = targetData.citizenid
     
-    -- Check if trying to fire someone of higher rank via DB first
-    local employeeData = oxmysql:singleSync('SELECT grade FROM rsg_ranch_employees WHERE citizenid = ? AND ranchid = ?', {citizenid, ranchId})
-    if employeeData then
-        if employeeData.grade >= playerGrade then
-            TriggerClientEvent('ox_lib:notify', src, {type = 'error', description = 'Cannot fire someone of equal or higher rank.'})
-            return
+    -- ASYNC: Check if trying to fire someone of higher rank
+    oxmysql:single('SELECT grade FROM rsg_ranch_employees WHERE citizenid = ? AND ranchid = ?', {citizenid, ranchId}, function(employeeData)
+        if employeeData then
+            if employeeData.grade >= playerGrade then
+                TriggerClientEvent('ox_lib:notify', src, {type = 'error', description = 'Cannot fire someone of equal or higher rank.'})
+                return
+            end
         end
-    end
 
-    local TargetPlayer = RSGCore.Functions.GetPlayerByCitizenId(citizenid)
+        local TargetPlayer = RSGCore.Functions.GetPlayerByCitizenId(citizenid)
 
-    if TargetPlayer then
-        -- Online player firing
-        if TargetPlayer.PlayerData.job.name == ranchId then
-            TargetPlayer.Functions.SetJob('unemployed', 0)
-            TargetPlayer.Functions.Save()
-            TriggerClientEvent('ox_lib:notify', TargetPlayer.PlayerData.source, {type = 'error', description = 'You have been fired from ' .. ranchId})
+        if TargetPlayer then
+            -- Online player firing
+            if TargetPlayer.PlayerData.job.name == ranchId then
+                TargetPlayer.Functions.SetJob('unemployed', 0)
+                TargetPlayer.Functions.Save()
+                TriggerClientEvent('ox_lib:notify', TargetPlayer.PlayerData.source, {type = 'error', description = 'You have been fired from ' .. ranchId})
+            end
+        else
+            -- Offline player firing - update players table
+            local unemployedJob = {
+                name = "unemployed",
+                label = "Unemployed",
+                payment = 10,
+                grade = { name = "No Grade", level = 0 },
+                onduty = false,
+                isboss = false,
+                type = "none"
+            }
+            oxmysql:update('UPDATE players SET job = ? WHERE citizenid = ? AND job LIKE ?', {json.encode(unemployedJob), citizenid, '%"name":"'..ranchId..'"%'})
         end
-    else
-        -- Offline player firing - update players table
-        local unemployedJob = {
-            name = "unemployed",
-            label = "Unemployed",
-            payment = 10,
-            grade = { name = "No Grade", level = 0 },
-            onduty = false,
-            isboss = false,
-            type = "none"
-        }
-        oxmysql:update('UPDATE players SET job = ? WHERE citizenid = ? AND job LIKE ?', {json.encode(unemployedJob), citizenid, '%"name":"'..ranchId..'"%'})
-    end
 
-    -- REMOVE from rsg_ranch_employees table
-    oxmysql:execute('DELETE FROM rsg_ranch_employees WHERE citizenid = ? AND ranchid = ?', {citizenid, ranchId})
-    
-    TriggerClientEvent('ox_lib:notify', src, {type = 'success', description = 'Employee fired.'})
+        -- REMOVE from rsg_ranch_employees table
+        oxmysql:execute('DELETE FROM rsg_ranch_employees WHERE citizenid = ? AND ranchid = ?', {citizenid, ranchId})
+        
+        TriggerClientEvent('ox_lib:notify', src, {type = 'success', description = 'Employee fired.'})
+    end)
 end)
 
 
@@ -450,15 +458,20 @@ RSGCore.Functions.CreateCallback('rsg-ranch:server:getRanchData', function(sourc
     if not Player then return cb(nil) end
     local ranchId = Player.PlayerData.job.name
     
-    local funds = oxmysql:scalarSync('SELECT funds FROM rsg_ranch_funds WHERE ranchid = ?', {ranchId}) or 0
-    local animalCount = oxmysql:scalarSync('SELECT COUNT(*) FROM rsg_ranch_animals WHERE ranchid = ?', {ranchId}) or 0
-    local employees = 0 
-    
-    cb({
-        funds = funds,
-        animals = animalCount,
-        employees = employees
-    })
+    -- ASYNC: Fetch both values without blocking
+    oxmysql:scalar('SELECT funds FROM rsg_ranch_funds WHERE ranchid = ?', {ranchId}, function(funds)
+        funds = funds or 0
+        
+        oxmysql:scalar('SELECT COUNT(*) FROM rsg_ranch_animals WHERE ranchid = ?', {ranchId}, function(animalCount)
+            animalCount = animalCount or 0
+            
+            cb({
+                funds = funds,
+                animals = animalCount,
+                employees = 0
+            })
+        end)
+    end)
 end)
 RSGCore.Functions.CreateCallback('rsg-ranch:server:getOwnedAnimals', function(source, cb)
     local Player = RSGCore.Functions.GetPlayer(source)
@@ -466,6 +479,14 @@ RSGCore.Functions.CreateCallback('rsg-ranch:server:getOwnedAnimals', function(so
     local ranchId = Player.PlayerData.job.name
     
     oxmysql:query('SELECT * FROM rsg_ranch_animals WHERE ranchid = ?', {ranchId}, function(result)
+        if result then
+            for _, animal in ipairs(result) do
+                 -- Convert Age from Ticks (minutes) to Ranch Days
+                 -- 2 hours (120 mins) = Full Growth (10 Days)
+                 -- 12 mins = 1 Ranch Day
+                 animal.age = math.floor((animal.age or 0) / 12)
+            end
+        end
         cb(result)
     end)
 end)
@@ -564,16 +585,17 @@ RegisterNetEvent('rsg-ranch:server:placeRanchTable', function(data)
     local model = data.model
     local coords = data.coords
     
-    -- Check if table exists
-    local exists = oxmysql:scalarSync('SELECT 1 FROM rsg_ranch_objects WHERE ranchid = ?', {ranchId})
-    if exists then
-        TriggerClientEvent('ox_lib:notify', src, {type = 'error', description = 'This ranch already has a crafting table.'})
-        return
-    end
+    -- ASYNC: Check if table exists without blocking
+    oxmysql:scalar('SELECT 1 FROM rsg_ranch_objects WHERE ranchid = ?', {ranchId}, function(exists)
+        if exists then
+            TriggerClientEvent('ox_lib:notify', src, {type = 'error', description = 'This ranch already has a crafting table.'})
+            return
+        end
 
-    oxmysql:insert('INSERT INTO rsg_ranch_objects (ranchid, model, coords) VALUES (?, ?, ?)', {ranchId, model, json.encode(coords)}, function(id)
-        TriggerClientEvent('ox_lib:notify', src, {type = 'success', description = 'Table placed successfully.'})
-        TriggerEvent('rsg-ranch:server:loadRanchObjects') -- Refresh all
+        oxmysql:insert('INSERT INTO rsg_ranch_objects (ranchid, model, coords) VALUES (?, ?, ?)', {ranchId, model, json.encode(coords)}, function(id)
+            TriggerClientEvent('ox_lib:notify', src, {type = 'success', description = 'Table placed successfully.'})
+            TriggerEvent('rsg-ranch:server:loadRanchObjects') -- Refresh all
+        end)
     end)
 end)
 
@@ -582,8 +604,10 @@ RSGCore.Functions.CreateCallback('rsg-ranch:server:hasTable', function(source, c
     if not Player then return cb(false) end
     local ranchId = Player.PlayerData.job.name
     
-    local exists = oxmysql:scalarSync('SELECT 1 FROM rsg_ranch_objects WHERE ranchid = ?', {ranchId})
-    cb(exists ~= nil)
+    -- ASYNC: Check table existence
+    oxmysql:scalar('SELECT 1 FROM rsg_ranch_objects WHERE ranchid = ?', {ranchId}, function(exists)
+        cb(exists ~= nil)
+    end)
 end)
 
 RegisterNetEvent('rsg-ranch:server:removeRanchTable', function()
@@ -636,14 +660,15 @@ RegisterNetEvent('rsg-ranch:server:renameAnimal', function(data)
 
     if not animalId or not newName then return end
 
-    -- Check ownership
-    local animal = oxmysql:singleSync('SELECT * FROM rsg_ranch_animals WHERE animalid = ? AND ranchid = ?', {animalId, ranchId})
-    if animal then
-        oxmysql:update('UPDATE rsg_ranch_animals SET name = ? WHERE animalid = ?', {newName, animalId})
-        TriggerClientEvent('ox_lib:notify', src, {title = 'Renamed', description = 'Animal renamed to ' .. newName, type = 'success'})
-    else
-        TriggerClientEvent('ox_lib:notify', src, {title = 'Error', description = 'Animal not found!', type = 'error'})
-    end
+    -- ASYNC: Check ownership
+    oxmysql:single('SELECT * FROM rsg_ranch_animals WHERE animalid = ? AND ranchid = ?', {animalId, ranchId}, function(animal)
+        if animal then
+            oxmysql:update('UPDATE rsg_ranch_animals SET name = ? WHERE animalid = ?', {newName, animalId})
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Renamed', description = 'Animal renamed to ' .. newName, type = 'success'})
+        else
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Error', description = 'Animal not found!', type = 'error'})
+        end
+    end)
 end)
 
 RSGCore.Functions.CreateCallback('rsg-ranch:server:hasFeed', function(source, cb)

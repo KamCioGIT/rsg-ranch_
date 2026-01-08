@@ -98,7 +98,7 @@ function hideAll() {
 
 function openEmployeeList(employees) {
     try {
-        console.log("JS: Rendering employee list...", employees);
+
         hideAll();
 
         const listMenu = document.getElementById('employee-list-menu');
@@ -286,7 +286,7 @@ function openSellMenu(items) {
 
 // Global function for inline onclick to ensure it always works
 window.spawnSpecificAnimal = function (id) {
-    console.log("Spawn button clicked (Global) for ID:", id);
+
     // Force string conversion just in case
     postAction('spawnSpecific', { id: String(id) });
     setTimeout(() => closeMenu(), 100);
@@ -477,8 +477,60 @@ document.onkeyup = function (data) {
     }
 };
 
+let animalStatusTimer = null; // Global timer reference
+
 function openAnimalStatus(data) {
     hideAll();
+
+    // Clear any existing timer
+    if (animalStatusTimer) {
+        clearInterval(animalStatusTimer);
+        animalStatusTimer = null;
+    }
+
+    // Store initial values for live updates
+    let scale = data.scale || 0.5;
+    let startScale = 0.5;
+    let maxScale = 1.0;
+    let progress = Math.min(100, Math.max(0, ((scale - startScale) / (maxScale - startScale)) * 100));
+    let calculatedAge = Math.floor(progress / 10);
+
+    // Calculate time remaining based on SCALE progress (Option A - only while spawned+fed)
+    // Total growth time = 2 hours, progress determines how much time is left
+    let totalGrowthTime = 120 * 60; // 2 hours in seconds
+    let baseSecondsRemaining = Math.max(0, ((100 - progress) / 100) * totalGrowthTime);
+    let startTime = Date.now();
+    let isPaused = data.hunger < 30; // Timer paused if hungry
+
+    function updateDisplay() {
+        let secondsRemaining = baseSecondsRemaining;
+
+        // Only countdown if not paused (hunger >= 30)
+        if (!isPaused) {
+            let elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+            secondsRemaining = Math.max(0, baseSecondsRemaining - elapsedSeconds);
+        }
+
+        let hoursRemaining = Math.floor(secondsRemaining / 3600);
+        let minsRemaining = Math.floor((secondsRemaining % 3600) / 60);
+        let secsRemaining = Math.floor(secondsRemaining % 60);
+
+        let growthStatusText = "";
+        if (data.nextGrowth === "Fully Grown" || progress >= 100) {
+            growthStatusText = "🌟 Fully Grown & Ready!";
+        } else if (isPaused) {
+            growthStatusText = `⏸️ Timer Paused (Feed Me!) | ${progress.toFixed(0)}% | ${hoursRemaining}h ${minsRemaining}m`;
+        } else {
+            growthStatusText = `📈 Growing: ${progress.toFixed(0)}% | ⏱️ ${hoursRemaining}h ${minsRemaining}m ${secsRemaining}s`;
+        }
+
+        // Update the timer element
+        const timerEl = document.getElementById('growth-timer');
+        if (timerEl) {
+            timerEl.textContent = growthStatusText;
+        }
+    }
+
     statusContent.innerHTML = `
         <div class="status-row">
             <div class="stat-box" style="flex: 1;">
@@ -498,23 +550,20 @@ function openAnimalStatus(data) {
         </div>
 
         <div class="status-info" style="color: #3e2723; font-weight: bold; font-size: 1.1rem; margin-top: 20px;">
-            <span><strong>Age:</strong> ${data.age} days</span>
+            <span><strong>Age:</strong> ${calculatedAge} days</span>
             <span><strong>Gender:</strong> ${data.gender}</span>
         </div>
         
-        <div style="margin-top:15px; text-align:center; font-family:var(--body-font); font-weight:800; color: #3e2723; border-top: 1px solid #5d403755; padding-top: 15px; font-size: 1.2rem;">
-            ${(function () {
-            if (data.nextGrowth === "Fully Grown") return "Status: Fully Grown";
-            if (data.hunger < 30) return "Growth Paused (Needs Food)";
-            let now = Math.floor(Date.now() / 1000);
-            let diff = data.nextGrowth - now;
-            if (diff <= 0) return "Growth Pending...";
-            let mins = Math.floor(diff / 60);
-            let secs = diff % 60;
-            return `Next Stage Breakdown: ${mins}m ${secs}s`;
-        })()}
+        <div id="growth-timer" style="margin-top:15px; text-align:center; font-family:var(--body-font); font-weight:800; color: #3e2723; border-top: 1px solid #5d403755; padding-top: 15px; font-size: 1.2rem;">
         </div>
     `;
+
+    // Initial update
+    updateDisplay();
+
+    // Start live countdown (update every second)
+    animalStatusTimer = setInterval(updateDisplay, 1000);
+
     statusMenu.classList.remove('hidden');
 }
 
@@ -680,7 +729,7 @@ function craftSelectedItem() {
     const item = window.selectedRecipe.item;
     const amount = window.selectedQuantity || 1;
 
-    console.log("Crafting item:", item, "Amount:", amount);
+
 
     fetch(`https://${GetParentResourceName()}/craftItem`, {
         method: 'POST',
@@ -790,7 +839,7 @@ function confirmCraft() {
     const item = window.selectedRecipe.item;
     const amount = window.selectedQuantity || 1;
 
-    console.log("Crafting item:", item, "Amount:", amount);
+
 
     fetch(`https://${GetParentResourceName()}/craftItem`, {
         method: 'POST',

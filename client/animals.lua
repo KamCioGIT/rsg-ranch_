@@ -189,14 +189,8 @@ function SetupAnimalTarget(ped, animalId, animalData)
             label = 'Check Status',
             onSelect = function()
                 RSGCore.Functions.TriggerCallback('rsg-ranch:server:getNextGrowth', function(nextTime)
-                    -- Use fresh data from cache
-                    local freshData = animalData
-                    for _, a in ipairs(animalDataCache) do
-                        if a.animalid == animalId then
-                            freshData = a
-                            break
-                        end
-                    end
+                    -- Use fresh data from cache (Direct Lookup)
+                    local freshData = animalDataCache[tostring(animalId)] or animalData
 
                     SetNuiFocus(true, true)
                     SendNUIMessage({
@@ -206,6 +200,8 @@ function SetupAnimalTarget(ped, animalId, animalData)
                             hunger = freshData.hunger or 100,
                             age = freshData.age or 0,
                             gender = freshData.gender or 'female',
+                            scale = tonumber(freshData.scale) or 0.5,
+                            born = tonumber(freshData.born) or os.time(),
                             nextGrowth = ((tonumber(freshData.scale) or 1.0) >= (Config.Growth.DefaultMaxScale or 1.0)) and "Fully Grown" or nextTime
                         }
                     })
@@ -230,8 +226,13 @@ CreateThread(function()
 end)
 
 RegisterNetEvent('rsg-ranch:client:spawnAnimals', function(animals)
-    animalDataCache = animals
+    -- Don't overwrite! Smart update.
     for _, animal in ipairs(animals) do
+        local idStr = tostring(animal.animalid)
+        
+        -- Update Cache (Dictionary Style)
+        animalDataCache[idStr] = animal
+        
         if spawnedMap[animal.animalid] and DoesEntityExist(spawnedMap[animal.animalid]) then
              -- Update existing scale dynamically
              local ped = spawnedMap[animal.animalid]
