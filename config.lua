@@ -297,6 +297,120 @@ Config.CraftingRecipes = {
         time = 3000,
         animDict = 'mech_inventory@crafting@fallbacks',
         animName = 'full_craft_and_stow'
+    },
+    { 
+        item = 'cloth', 
+        label = 'Cloth', 
+        ingredients = { 
+            { item = 'wool', amount = 2, label = 'Wool' } 
+        },
+        time = 4000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
+    },
+    { 
+        item = 'boiled_egg', 
+        label = 'Boiled Egg', 
+        ingredients = { 
+            { item = 'egg', amount = 1, label = 'Egg' } 
+        },
+        time = 2000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
+    },
+    { 
+        item = 'flour', 
+        label = 'Flour', 
+        ingredients = { 
+            { item = 'wheat', amount = 2, label = 'Wheat' } 
+        },
+        time = 5000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
+    },
+    { 
+        item = 'bread', 
+        label = 'Bread', 
+        ingredients = { 
+            { item = 'flour', amount = 1, label = 'Flour' },
+            { item = 'milk', amount = 1, label = 'Milk' }
+        },
+        time = 10000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
+    },
+    { 
+        item = 'sausage', 
+        label = 'Sausage', 
+        ingredients = { 
+            { item = 'raw_meat', amount = 2, label = 'Raw Meat' }
+        },
+        time = 6000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
+    },
+    { 
+        item = 'jerky', 
+        label = 'Jerky', 
+        ingredients = { 
+            { item = 'raw_meat', amount = 1, label = 'Raw Meat' }
+        },
+        time = 5000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
+    },
+    { 
+        item = 'leather', 
+        label = 'Leather', 
+        ingredients = { 
+            { item = 'hide_cow_1star', amount = 1, label = 'Cow Hide' }
+        },
+        time = 8000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
+    },
+    { 
+        item = 'sugar', 
+        label = 'Sugar', 
+        ingredients = { 
+            { item = 'cana', amount = 2, label = 'Sugarcane' }
+        },
+        time = 4000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
+    },
+    { 
+        item = 'jam_raspberry', 
+        label = 'Raspberry Jam', 
+        ingredients = { 
+            { item = 'red_raspberry', amount = 2, label = 'Raspberry' },
+            { item = 'sugar', amount = 1, label = 'Sugar' }
+        },
+        time = 5000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
+    },
+    { 
+        item = 'jam_blackcurrant', 
+        label = 'Blackcurrant Jam', 
+        ingredients = { 
+            { item = 'black_currant', amount = 2, label = 'Black Currant' },
+            { item = 'sugar', amount = 1, label = 'Sugar' }
+        },
+        time = 5000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
+    },
+    { 
+        item = 'jam_peach', 
+        label = 'Peach Jam', 
+        ingredients = { 
+            { item = 'consumable_peach', amount = 2, label = 'Peach' },
+            { item = 'sugar', amount = 1, label = 'Sugar' }
+        },
+        time = 5000,
+        animDict = 'mech_inventory@crafting@fallbacks',
+        animName = 'full_craft_and_stow'
     }
 }
 
