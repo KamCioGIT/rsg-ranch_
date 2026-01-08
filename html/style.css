@@ -261,62 +261,60 @@ body {
 }
 
 /* BOSS STATS STRIP */
+/* BOSS STATS STRIP */
 .boss-stats {
     display: flex;
     justify-content: center;
     width: 100%;
-    margin-bottom: 2rem;
-    gap: 2rem;
+    margin-bottom: 0.2rem;
+    /* Moved up even more */
+    gap: 2px;
+    /* Tiny gap (almost none) */
     box-sizing: border-box;
-    padding: 1.5rem 0;
+    padding: 0.5rem 0;
     border-top: 2px solid #3e2723;
-    /* Darker Chocolate Brown */
     border-bottom: 2px solid #3e2723;
-    /* Darker Chocolate Brown */
 }
 
 .stat-box {
     background: rgba(232, 220, 200, 0.2);
     border: 1px solid #4e342e;
-    /* Chocolate Brown */
-    padding: 1rem;
-    min-width: 150px;
-    height: 130px;
-    /* Fixed height for consistent look */
+    padding: 0.5rem;
+    min-width: 180px;
+    /* Wider (Rectangle) */
+    height: 85px;
+    /* Shorter */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    /* Move content towards top */
     border-radius: 2px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .stat-box div:first-child {
     font-family: var(--body-font);
-    font-size: 0.9rem;
-    /* Smaller size */
+    font-size: 0.8rem;
     color: #3e2723;
-    /* Chocolate Brown */
     text-transform: uppercase;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     margin-bottom: auto;
-    /* Push number down */
-    margin-top: 5px;
+    margin-top: 2px;
+    /* Tighter top */
     font-weight: 800;
-    /* Extra Bold */
 }
 
 .stat-box div:last-child {
     font-family: 'Rye', serif;
-    font-size: 2.8rem;
-    /* Larger */
+    font-size: 3.4rem;
+    /* Even larger */
     color: #3e2723;
-    /* Chocolate Brown */
     text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.3);
     font-weight: normal;
-    margin-bottom: 20px;
-    /* Space from bottom */
+    margin-bottom: 0;
+    /* No bottom space */
+    line-height: 0.9;
+    /* Tight line height */
 }
 
 /* CLOSE BUTTON */
@@ -603,8 +601,10 @@ body {
 }
 
 .details-image {
-    width: 150px;
-    height: 150px;
+    width: 200px;
+    /* Increased from 150px */
+    height: 200px;
+    /* Increased from 150px */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -657,6 +657,8 @@ body {
 
 .ingredient-row .ing-name {
     color: #3d2914;
+    font-weight: bold;
+    /* Added Bold */
 }
 
 /* Controls */

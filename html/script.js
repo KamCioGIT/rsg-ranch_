@@ -321,7 +321,7 @@ function openLivestockMenu(items) {
         items.forEach(item => {
             let actualId = item.animalid || item.id;
             let displayName = item.name || formatModelName(item.model);
-            let displayAge = calculateAge(item.born);
+            let displayAge = (item.age !== undefined) ? item.age + " Days" : "0 Days";
 
             const div = document.createElement('div');
             div.className = "item-card";

@@ -432,34 +432,38 @@ RegisterNUICallback('placeTable', function(data, cb)
         SetEntityCollision(vehicle, false, false)
         
         local placing = true
+        local currentHeading = GetEntityHeading(PlayerPedId())
         
         CreateThread(function()
             while placing do
                 Wait(0)
                 local hit, coords = RayCastGamePlayCamera(20.0)
                 
+                -- Rotation Logic
+                if IsControlPressed(0, 0xDEB34313) then -- Arrow Left (?) or use 0xA65EB6BA
+                     currentHeading = currentHeading + 1.0
+                end
+                if IsControlPressed(0, 0x9D2AEA88) then -- Arrow Right
+                     currentHeading = currentHeading - 1.0
+                end
+                -- Scroll Wheel Support (Optional, but good)
+                
                 SetEntityCoords(vehicle, coords.x, coords.y, coords.z)
+                SetEntityHeading(vehicle, currentHeading)
                 PlaceObjectOnGroundProperly(vehicle)
                 
-                lib.showTextUI('[E] Place  [Backspace] Cancel')
+                lib.showTextUI('[E] Place  [Arrows] Rotate  [Backspace] Cancel')
                 
-                if IsControlJustPressed(0, 0xCEFD9220) then -- 'E' (INPUT_CONTEXT usually, checking correct hash or use key mapping)
-                    -- For RedM specifically: 0xCEFD9220 is 'E' equivalent often? Let's use simpler IsControlJustPressed(0, 0xCEFD9220) (Interact?)
-                    -- Wait, RedM inputs are specific. 0xCEFD9220 is 'E' (Context). Or 0xD9D0E1C0 (Jump). 
-                    -- Let's rely on standard: 0xCEFD9220 might work. Or 0x27D1C284 (INPUT_CONTEXT_A).
-                    -- Let's try lib.showTextUI instruction.
-                end
-
-                if IsControlJustPressed(0, 0xCEFD9220) then -- E
+                if IsControlJustPressed(0, 0xCEFD9220) then -- 'E'
                     placing = false
                     local finalCoords = GetEntityCoords(vehicle)
-                    local heading = GetEntityHeading(vehicle)
+                    local finalHeading = GetEntityHeading(vehicle)
                     DeleteEntity(vehicle)
                     lib.hideTextUI()
                     
                     TriggerServerEvent('rsg-ranch:server:placeRanchTable', {
                         model = 'p_table04x',
-                        coords = {x=finalCoords.x, y=finalCoords.y, z=finalCoords.z, w=heading}
+                        coords = {x=finalCoords.x, y=finalCoords.y, z=finalCoords.z, w=finalHeading}
                     })
                 end
                 
