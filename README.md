@@ -42,14 +42,92 @@ A comprehensive ranching system for RedM using the RSG Core framework. This reso
 
 ## 📦 Installation
 
-1.  **Dependencies**: Ensure you have `rsg-core`, `oxmysql`, `ox_lib` (or supported menu/target), and `rsg-inventory` installed.
-2.  **Database**: Import the `rsg-ranch.sql` file into your database.
-    *   *Important*: Ensure your `scale` column is `DECIMAL(6,5)` to support smooth growth updates.
-    ```sql
-    ALTER TABLE rsg_ranch_animals MODIFY COLUMN scale DECIMAL(6,5) DEFAULT 0.50000;
-    ```
-3.  **Config**: Review `config.lua` to adjust settings to your server's economy.
-4.  **Images**: Copy the asset images from `rsg-ranch/html/assets` to your inventory resource (`rsg-inventory/html/images`).
+### Step 1: Dependencies
+Ensure you have the following resources installed:
+- `rsg-core`
+- `oxmysql`
+- `ox_lib` (or supported menu/target)
+- `rsg-inventory`
+
+### Step 2: Database Setup
+Import the `rsg-ranch.sql` file into your database.
+
+*Important*: Ensure your `scale` column is `DECIMAL(6,5)` to support smooth growth updates:
+```sql
+ALTER TABLE rsg_ranch_animals MODIFY COLUMN scale DECIMAL(6,5) DEFAULT 0.50000;
+```
+
+### Step 3: Add Ranch Jobs to RSG-Core
+Open your `rsg-core/shared/jobs.lua` file and add the ranch jobs.
+
+**Option A: Copy the entire file**
+Copy the contents from `rsg-ranch/installation/shared_jobs.lua` and paste them inside your `RSGCore.Shared.Jobs` table.
+
+**Option B: Add individual ranches**
+Add this structure for each ranch you want to enable:
+```lua
+['macfarranch'] = {
+    label = 'Macfarlane Rancher',
+    type = 'rancher',
+    defaultDuty = true,
+    offDutyPay = false,
+    grades = {
+        ['0'] = { name = 'Trainee Rancher', payment = 3 },
+        ['1'] = { name = 'Ranch Hand', payment = 5 },
+        ['2'] = { name = 'Senior Rancher', payment = 7 },
+        ['3'] = { name = 'Ranch Manager', isboss = true, payment = 10 },
+        ['4'] = { name = 'Ranch Boss', isboss = true, payment = 15 },
+    },
+},
+```
+
+**Available Ranch Job Names:**
+| Job Name | Ranch Location |
+|---|---|
+| `macfarranch` | MacFarlane Ranch |
+| `emeraldranch` | Emerald Ranch |
+| `pronghornranch` | Pronghorn Ranch |
+| `downesranch` | Downes Ranch |
+| `hillhavenranch` | Hill Haven Ranch |
+| `hangingdogranch` | Hanging Dog Ranch |
+| `bayounwaranch` | Bayou Nwa Ranch |
+| `gaptoothranch` | Gaptooth Ranch |
+| `adlerranch` | Adler Ranch |
+
+### Step 4: Set Player Jobs (Admin Only)
+Use the RSG-Core admin command to assign players to ranch jobs:
+```
+/setjob [playerid] [jobname] [grade]
+```
+
+**Examples:**
+```
+/setjob 1 macfarranch 4    -- Makes player 1 the Boss of MacFarlane Ranch
+/setjob 2 emeraldranch 0   -- Makes player 2 a Trainee at Emerald Ranch
+```
+
+**Grade Levels:**
+| Grade | Role | Permissions |
+|---|---|---|
+| 0 | Trainee Rancher | Basic access |
+| 1 | Ranch Hand | Basic access |
+| 2 | Senior Rancher | Basic access |
+| 3 | Ranch Manager | Can hire/fire, access storage |
+| 4 | Ranch Boss | Full access |
+
+**Employee Limits:**
+- Each ranch can have a maximum of **10 employees**.
+- Only **Manager (grade 3)** and **Boss (grade 4)** can hire new employees.
+
+> **Note:** The `/setjob` command is built into RSG-Core and is **admin-only** by default. Only players with admin permissions can use it.
+
+### Step 5: Copy Item Images
+Copy the asset images from `rsg-ranch/html/assets` to your inventory resource:
+- **Source:** `rsg-ranch/html/assets/*.png`
+- **Destination:** `rsg-inventory/html/images/`
+
+### Step 6: Review Config
+Open `config.lua` to adjust settings to your server's economy (prices, growth rates, etc.).
 
 ## ⚙️ Configuration Guide
 

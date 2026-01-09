@@ -340,24 +340,39 @@ RegisterNetEvent('rsg-ranch:server:hireEmployee', function(targetId)
         return
     end
 
-    -- Default hire grade is 0
-    local grade = 0
-    local fullname = TargetPlayer.PlayerData.charinfo.firstname .. ' ' .. TargetPlayer.PlayerData.charinfo.lastname
-    local targetCitizenId = TargetPlayer.PlayerData.citizenid
+    -- Check employee limit (max 10 per ranch)
+    oxmysql:scalar('SELECT COUNT(*) FROM rsg_ranch_employees WHERE ranchid = ?', {ranchId}, function(count)
+        count = count or 0
+        
+        if count >= 10 then
+            TriggerClientEvent('ox_lib:notify', src, {type = 'error', description = 'Employee limit reached! Maximum 10 employees per ranch.'})
+            return
+        end
+        
+        -- Re-validate players still exist
+        local PlayerNow = RSGCore.Functions.GetPlayer(src)
+        local TargetNow = RSGCore.Functions.GetPlayer(targetId)
+        if not PlayerNow or not TargetNow then return end
+        
+        -- Default hire grade is 0
+        local grade = 0
+        local fullname = TargetNow.PlayerData.charinfo.firstname .. ' ' .. TargetNow.PlayerData.charinfo.lastname
+        local targetCitizenId = TargetNow.PlayerData.citizenid
 
-    -- Set target player's job
-    if TargetPlayer.Functions.SetJob(ranchId, grade) then
-        TargetPlayer.Functions.Save()
-        
-        -- INSERT into rsg_ranch_employees
-        oxmysql:insert('INSERT INTO rsg_ranch_employees (ranchid, citizenid, fullname, grade) VALUES (?, ?, ?, ?)', 
-            {ranchId, targetCitizenId, fullname, grade})
-        
-        TriggerClientEvent('ox_lib:notify', src, {type = 'success', description = 'Hired ' .. fullname})
-        TriggerClientEvent('ox_lib:notify', targetId, {type = 'success', description = 'You have been hired at ' .. ranchId})
-    else
-        TriggerClientEvent('ox_lib:notify', src, {type = 'error', description = 'Failed to set job for player.'})
-    end
+        -- Set target player's job
+        if TargetNow.Functions.SetJob(ranchId, grade) then
+            TargetNow.Functions.Save()
+            
+            -- INSERT into rsg_ranch_employees
+            oxmysql:insert('INSERT INTO rsg_ranch_employees (ranchid, citizenid, fullname, grade) VALUES (?, ?, ?, ?)', 
+                {ranchId, targetCitizenId, fullname, grade})
+            
+            TriggerClientEvent('ox_lib:notify', src, {type = 'success', description = 'Hired ' .. fullname .. ' (' .. (count + 1) .. '/10 employees)'})
+            TriggerClientEvent('ox_lib:notify', targetId, {type = 'success', description = 'You have been hired at ' .. ranchId})
+        else
+            TriggerClientEvent('ox_lib:notify', src, {type = 'error', description = 'Failed to set job for player.'})
+        end
+    end)
 end)
 
 -- FIRE PLAYER

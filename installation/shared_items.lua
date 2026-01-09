@@ -3,6 +3,7 @@
 -----------------------------------------------
 animal_feed  = { name = 'animal_feed',  label = 'Animal Feed',  weight = 1000, type = 'item', image = 'animal_feed.png',  unique = false, useable = true, shouldClose = true, description = 'feed for your animals' },
 water_bucket = { name = 'water_bucket', label = 'Water Bucket', weight = 1000, type = 'item', image = 'water_bucket.png', unique = true,  useable = true, shouldClose = true, description = 'water for your animals' },
+shovel       = { name = 'shovel',       label = 'Shovel',       weight = 1500, type = 'item', image = 'shovel.png',       unique = true,  useable = true, shouldClose = true, description = 'used for digging and collecting manure' },
 -----------------------------------------------
 -- ANIMAL PRODUCTS
 -----------------------------------------------

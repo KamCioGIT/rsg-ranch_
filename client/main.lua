@@ -309,6 +309,16 @@ RegisterNUICallback('depositPrompt', function(data, cb)
 end)
 
 RegisterNUICallback('manageStaff', function(data, cb)
+    local Player = RSGCore.Functions.GetPlayerData()
+    local grade = Player.job.grade.level or 0
+    
+    -- Only Manager (3) and Boss (4) can hire
+    if grade < 3 then
+        lib.notify({title = 'Access Denied', description = 'Only Manager and Boss can hire employees.', type = 'error'})
+        cb('ok')
+        return
+    end
+    
     RSGCore.Functions.TriggerCallback('rsg-ranch:server:getNearbyPlayers', function(players)
         SetNuiFocus(true, true) -- Ensure cursor stays
         SendNUIMessage({
