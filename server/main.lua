@@ -64,7 +64,7 @@ RegisterNetEvent('rsg-ranch:server:buyItem', function(data)
                 })
             end
 
-            TriggerClientEvent('ox_lib:notify', src, {title = 'Purchase Successful', description = 'Bought '..amount..' animals.', type = 'success'})
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Purchase Successful', description = 'Thanks for your purchase! We will send '..amount..' animal(s) to your ranch.', type = 'success'})
         else
             TriggerClientEvent('ox_lib:notify', src, {title = 'Purchase Failed', description = 'Not enough cash! Need $'..totalPrice, type = 'error'})
         end
@@ -103,7 +103,8 @@ RegisterNetEvent('rsg-ranch:server:sellItem', function(data)
             end
         end
         
-        local maxSellPrice = Config.BaseSellPrices[model] or (buyPrice * 2)
+        -- Max sell price is 2x the buy price (when fully grown)
+        local maxSellPrice = buyPrice * 2
         
         local startScale = Config.Growth.DefaultStartScale
         local maxScale = Config.Growth.DefaultMaxScale
@@ -111,10 +112,14 @@ RegisterNetEvent('rsg-ranch:server:sellItem', function(data)
         if progress < 0 then progress = 0 end
         if progress > 1 then progress = 1 end
         
+        -- Price scales from 60% of buy price (baby) to 2x buy price (fully grown)
         local startValue = buyPrice * 0.6
         local finalPrice = math.floor(startValue + ((maxSellPrice - startValue) * progress))
         
-        local ranchShare = math.floor(finalPrice * 0.25) -- 25% to Ranch
+        -- Calculate ranch share as 20% of PROFIT (not total price)
+        -- Profit = finalPrice - buyPrice (only positive when sold above buy price)
+        local profit = math.max(0, finalPrice - buyPrice)
+        local ranchShare = math.floor(profit * 0.20) -- 20% of profit to Ranch
         local playerShare = finalPrice - ranchShare
         
         oxmysql:execute('DELETE FROM rsg_ranch_animals WHERE animalid = ?', {animalId})

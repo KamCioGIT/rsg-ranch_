@@ -210,9 +210,9 @@ body {
 
 /* QUANTITY INPUT */
 .qty-input-field {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--gold-dim);
-    color: var(--gold);
+    background: rgba(245, 239, 230, 0.9);
+    border: 2px solid #8b7355;
+    color: #3d2914;
     font-family: var(--mono-font);
     font-size: 1.1rem;
     padding: 5px;

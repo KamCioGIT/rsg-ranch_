@@ -119,8 +119,8 @@ CreateThread(function()
                                     end
                                 end
                                 
-                                -- Get Max Sell Price
-                                local maxSellPrice = Config.BaseSellPrices and Config.BaseSellPrices[model] or (buyPrice * 2)
+                                -- Max sell price is 2x the buy price (when fully grown)
+                                local maxSellPrice = buyPrice * 2
                                 
                                 -- Calculate Progress
                                 local startScale = Config.Growth.DefaultStartScale
@@ -252,20 +252,26 @@ RegisterNUICallback('craftItem', function(data, cb)
                 -- Adjust time for amount (optional, but realistic)
                 local totalTime = time * amount
                 
-                RSGCore.Functions.Progressbar("crafting_ranch", "Crafting " .. label, totalTime, false, true, {
-                    disableMovement = true,
-                    disableCarMovement = true,
-                    disableMouse = false,
-                    disableCombat = true,
-                }, {
-                    animDict = animDict,
-                    anim = animName,
-                    flags = 1,
-                }, {}, {}, function() -- Done
+                if lib.progressBar({
+                    duration = totalTime,
+                    label = 'Crafting ' .. label,
+                    useWhileDead = false,
+                    canCancel = true,
+                    disable = {
+                        car = true,
+                        move = true,
+                        combat = true,
+                    },
+                    anim = {
+                        dict = animDict,
+                        clip = animName,
+                        flag = 1,
+                    },
+                }) then
                     TriggerServerEvent('rsg-ranch:server:craftItem', item, amount)
-                end, function() -- Cancel
+                else
                     lib.notify({title = 'Canceled', description = 'Crafting canceled.', type = 'error'})
-                end)
+                end
             else
                 TriggerServerEvent('rsg-ranch:server:craftItem', item, amount) -- Fallback
             end

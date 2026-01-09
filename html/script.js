@@ -473,6 +473,21 @@ function sellItem(id) {
 // Close on Escape key
 document.onkeyup = function (data) {
     if (data.which == 27) {
+        // Close rename modal if open
+        const renameModal = document.getElementById('rename-modal');
+        if (renameModal && !renameModal.classList.contains('hidden')) {
+            closeRenameModal();
+            return;
+        }
+        
+        // Close craft modal if open
+        const craftModalOverlay = document.getElementById('craft-modal-overlay');
+        if (craftModalOverlay) {
+            closeCraftModal();
+            return;
+        }
+        
+        // Close main menu
         closeMenu();
     }
 };

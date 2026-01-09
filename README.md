@@ -29,9 +29,13 @@ A comprehensive ranching system for RedM using the RSG Core framework. This reso
 *   **Crafting System**:
     *   Process raw products into valuable goods (Cheese, Butter, Cloth, etc.).
     *   Configurable recipes in `config.lua`.
-*   **Selling System**:
-    *   Sell animals back to the dealer.
-    *   Price depends on **Age** and **Growth**. Fully grown animals sell for the most!
+*   **Economy System**:
+    *   **Buying**: Purchase animals from the Livestock Dealer for a base price.
+    *   **Selling**: Sell animals back to the dealer. Price scales with growth:
+        *   Baby animals sell for 60% of buy price (to discourage instant resale).
+        *   **Fully grown animals sell for 2x the buy price!**
+    *   **Ranch Revenue**: 20% of your **profit** (sell price - buy price) goes to the ranch funds.
+    *   **Example**: Buy a cow for $50 → Grow it fully → Sell for $100. Profit is $50, ranch gets $10 (20%), you get $90.
 *   **Interactive UI**:
     *   Beautiful, vintage-style status menu for animals.
     *   Live countdown timers for growth.
