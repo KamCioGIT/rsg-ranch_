@@ -25,6 +25,7 @@ A comprehensive ranching system for RedM using the RSG Core framework. This reso
 *   **Ranch Management**:
     *   Job-locked ranches (MacFarlane, Emerald, Pronghorn, etc.).
     *   "My Herd" menu to manage and spawn your owned animals.
+    *   **Rename your animals** by clicking on their name in the My Herd menu.
     *   Animals persist in the database and save their growth/stats.
 *   **Crafting System**:
     *   Process raw products into valuable goods (Cheese, Butter, Cloth, etc.).
@@ -189,15 +190,19 @@ Add to `Config.CraftingRecipes`:
 
 ## 🎮 How to Use (Players)
 
-1.  **Get a Ranch Job**: You need the specific job for your ranch (e.g., `macfarranch`).
-2.  **Buy Animals**: Visit the **Livestock Dealer** (marked on map) to buy animals.
-3.  **Spawn Animals**: Go to your ranch's main management point and open the menu to spawn your herd.
-4.  **Feed Them**: Use `animal_feed` on your animals. **They won't grow if they are hungry!**
-5.  **Check Status**: Alt-eye (target) the animal to check their growth progress, health, and hunger.
-6.  **Harvest**: When products are ready (milk/wool/eggs), interact with the animal.
-7.  **Sell**: Visit the Livestock Dealer to sell your animals.
-    *   **Fully Grown Bonus**: Selling a fully grown (100%) animal rewards you with **Cash** AND **Resources** (Meat, Leather, etc.) automatically!
-    *   **Young Animals**: Selling young animals yields less cash and no bonus resources.
+1.  **Get a Ranch Job**: Get hired by a ranch or have an admin assign you a job (e.g., `macfarranch`).
+2.  **Buy Animals**: Visit the **Livestock Dealer** (marked on map) to purchase animals.
+3.  **Manage Your Herd**: Go to your ranch and open the **Boss Menu** → **Manage Herd** to see your animals.
+4.  **Rename Animals**: Click on an animal's name in the My Herd menu to give it a custom name.
+5.  **Spawn Animals**: Click "Spawn" on any animal in your herd to bring it into the world.
+6.  **Feed Regularly**: Target the animal and select "Feed Animal" (requires `animal_feed` item). **Animals won't grow if hungry (below 30%)!**
+7.  **Check Status**: Target the animal and select "Check Status" to see health, hunger, and growth progress.
+8.  **Collect Manure**: Use a `shovel` at manure piles around the ranch to collect manure.
+9.  **Sell Animals**: Visit the Livestock Dealer to sell your animals.
+    *   **Price scales with growth**: Baby animals sell for 60% of buy price, fully grown sell for 2x buy price.
+    *   **Fully Grown Bonus**: Selling fully grown animals rewards you with **Cash** + **Bonus Resources** (Milk, Wool, Eggs, Meat, Leather, etc.)!
+    *   **Sell All**: Use the "Sell All" button to sell your entire herd at once.
+    *   **Ranch Revenue**: 20% of your profit goes to ranch funds.
 
 ## �‍🌾 Ranch Management (Job System)
 
