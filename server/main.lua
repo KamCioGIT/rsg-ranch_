@@ -163,6 +163,110 @@ RegisterNetEvent('rsg-ranch:server:sellItem', function(data)
     end)
 end)
 
+-- SELL ALL ANIMALS
+RegisterNetEvent('rsg-ranch:server:sellAllAnimals', function()
+    local src = source
+    local Player = RSGCore.Functions.GetPlayer(src)
+    if not Player then return end
+
+    local PlayerJob = Player.PlayerData.job
+    local ranchId = PlayerJob.name
+    
+    -- Fetch all animals for this ranch
+    oxmysql:query('SELECT * FROM rsg_ranch_animals WHERE ranchid = ?', {ranchId}, function(animals)
+        if not animals or #animals == 0 then
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Sale Failed', description = 'No animals found to sell.', type = 'error'})
+            return
+        end
+        
+        local PlayerNow = RSGCore.Functions.GetPlayer(src)
+        if not PlayerNow then return end
+        
+        local totalPlayerShare = 0
+        local totalRanchShare = 0
+        local fullyGrownCount = 0
+        local allRewards = {}
+        
+        for _, animal in ipairs(animals) do
+            local model = animal.model
+            local scale = tonumber(animal.scale) or Config.Growth.DefaultStartScale
+            
+            -- Find buy price
+            local buyPrice = 0
+            for _, item in ipairs(Config.AnimalsToBuy) do
+                if item.model == model then
+                    buyPrice = item.price
+                    break
+                end
+            end
+            
+            local maxSellPrice = buyPrice * 2
+            local startScale = Config.Growth.DefaultStartScale
+            local maxScale = Config.Growth.DefaultMaxScale
+            local progress = (scale - startScale) / (maxScale - startScale)
+            if progress < 0 then progress = 0 end
+            if progress > 1 then progress = 1 end
+            
+            local startValue = buyPrice * 0.6
+            local finalPrice = math.floor(startValue + ((maxSellPrice - startValue) * progress))
+            
+            local profit = math.max(0, finalPrice - buyPrice)
+            local ranchShare = math.floor(profit * 0.20)
+            local playerShare = finalPrice - ranchShare
+            
+            totalPlayerShare = totalPlayerShare + playerShare
+            totalRanchShare = totalRanchShare + ranchShare
+            
+            -- Check for fully grown rewards
+            if progress >= 1 then
+                fullyGrownCount = fullyGrownCount + 1
+                local rewards = Config.SellRewards[model]
+                if rewards then
+                    for _, reward in ipairs(rewards) do
+                        allRewards[reward.item] = (allRewards[reward.item] or 0) + reward.amount
+                    end
+                end
+            end
+            
+            -- Despawn if spawned
+            TriggerEvent('rsg-ranch:server:despawnAnimal', animal.animalid)
+        end
+        
+        -- Delete all animals from DB
+        oxmysql:execute('DELETE FROM rsg_ranch_animals WHERE ranchid = ?', {ranchId})
+        
+        -- Give money to player
+        PlayerNow.Functions.AddMoney('cash', totalPlayerShare)
+        
+        -- Add ranch funds
+        if totalRanchShare > 0 then
+            oxmysql:execute('INSERT INTO rsg_ranch_funds (ranchid, funds) VALUES (?, ?) ON DUPLICATE KEY UPDATE funds = funds + ?', {ranchId, totalRanchShare, totalRanchShare})
+        end
+        
+        -- Give rewards for fully grown animals
+        local rewardMsg = ""
+        if fullyGrownCount > 0 then
+            local itemsGiven = {}
+            for itemName, amount in pairs(allRewards) do
+                if PlayerNow.Functions.AddItem(itemName, amount) then
+                    local itemData = RSGCore.Shared.Items[itemName]
+                    local itemLabel = itemData and itemData.label or itemName
+                    table.insert(itemsGiven, amount .. "x " .. itemLabel)
+                end
+            end
+            if #itemsGiven > 0 then
+                rewardMsg = " Bonus: " .. table.concat(itemsGiven, ", ")
+            end
+        end
+        
+        TriggerClientEvent('ox_lib:notify', src, {
+            title = 'Bulk Sale Complete', 
+            description = 'Sold ' .. #animals .. ' animals for $' .. totalPlayerShare .. '!' .. rewardMsg, 
+            type = 'success'
+        })
+    end)
+end)
+
 RegisterNetEvent('rsg-ranch:server:withdrawFunds', function(amount)
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)

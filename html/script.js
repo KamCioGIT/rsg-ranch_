@@ -264,6 +264,20 @@ function openSellMenu(items) {
 
     if (items.length === 0) {
         sellContent.innerHTML = "<div style='width:100%;text-align:center;'>No animals to sell nearby.</div>";
+    } else {
+        // Calculate total value for Sell All
+        let totalValue = 0;
+        items.forEach(item => totalValue += item.price);
+
+        // Add Sell All Button at the top
+        const sellAllContainer = document.createElement('div');
+        sellAllContainer.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 15px; background: rgba(92, 74, 50, 0.15); border: 2px solid #8b7355; margin-bottom: 10px;';
+        sellAllContainer.innerHTML = `
+            <div style="font-family: 'Rye', serif; font-size: 1.4rem; color: #3d2914; margin-bottom: 10px;">Sell All ${items.length} Animals</div>
+            <div style="font-family: 'Special Elite', monospace; font-size: 1.2rem; color: #5c4a32; margin-bottom: 15px;">Total Value: $${totalValue}</div>
+            <button class="item-btn" style="max-width: 250px; margin: 0 auto;" onclick="sellAllAnimals()">SELL ALL</button>
+        `;
+        sellContent.appendChild(sellAllContainer);
     }
 
     items.forEach(item => {
@@ -282,6 +296,17 @@ function openSellMenu(items) {
     });
 
     sellMenu.classList.remove('hidden');
+}
+
+function sellAllAnimals() {
+    fetch(`https://${GetParentResourceName()}/sellAllAnimals`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: JSON.stringify({})
+    });
+    closeMenu();
 }
 
 // Global function for inline onclick to ensure it always works
@@ -479,14 +504,14 @@ document.onkeyup = function (data) {
             closeRenameModal();
             return;
         }
-        
+
         // Close craft modal if open
         const craftModalOverlay = document.getElementById('craft-modal-overlay');
         if (craftModalOverlay) {
             closeCraftModal();
             return;
         }
-        
+
         // Close main menu
         closeMenu();
     }

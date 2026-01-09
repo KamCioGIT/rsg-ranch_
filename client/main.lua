@@ -223,6 +223,11 @@ RegisterNUICallback('sellItem', function(data, cb)
     cb('ok')
 end)
 
+RegisterNUICallback('sellAllAnimals', function(data, cb)
+    TriggerServerEvent('rsg-ranch:server:sellAllAnimals')
+    cb('ok')
+end)
+
 RegisterNUICallback('spawnAnimals', function(data, cb)
     TriggerServerEvent('rsg-ranch:server:spawnRanchAnimals')
     cb('ok')
