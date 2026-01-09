@@ -123,6 +123,23 @@ function SetupAnimalTarget(ped, animalId, animalData)
                         ClearPedTasks(playerPed) 
                         Wait(100) -- Small buffer
                         ClearPedTasks(playerPed) -- Double tap to ensure prop drop
+                        
+                        -- Force remove any bucket props attached to player
+                        local bucketModels = {
+                            GetHashKey('p_bucket02x'),
+                            GetHashKey('p_bucket01x'),
+                            GetHashKey('p_waterbucket01x'),
+                            GetHashKey('p_ambfeedbucket01x')
+                        }
+                        for _, bucketHash in ipairs(bucketModels) do
+                            local prop = GetClosestObjectOfType(GetEntityCoords(playerPed), 2.0, bucketHash, false, false, false)
+                            if prop and DoesEntityExist(prop) then
+                                DeleteEntity(prop)
+                            end
+                        end
+                        
+                        -- Also clear any prop in hand
+                        ClearPedTasksImmediately(playerPed)
 
                         TriggerServerEvent('rsg-ranch:server:feedAnimal', animalId)
                     end)
@@ -307,7 +324,7 @@ RegisterCommand('herd', function()
         if DoesEntityExist(animalPed) and not IsEntityDead(animalPed) then
             -- STRICT FILTER: Verify ownership via cache
             local isStatsMine = false
-            for _, aData in ipairs(animalDataCache) do
+            for _, aData in pairs(animalDataCache) do
                 -- Compare IDs loosely (string vs number safe) and verify ranchid matches job
                 if tonumber(aData.animalid) == tonumber(id) and aData.ranchid == Player.job.name then
                     isStatsMine = true

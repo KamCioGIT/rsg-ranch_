@@ -14,9 +14,14 @@ A comprehensive ranching system for RedM using the RSG Core framework. This reso
     *   **Hunger**: Decays over time. Feed animals with `animal_feed`. **Critical for growth.**
     *   **Thirst**: Decays over time (Cosmetic / Placeholder).
     *   **Health**: Can be affected by starvation.
-*   **Product Collection**:
-    *   Collect Milk, Wool, Eggs, and Manure from animals when they are ready.
-    *   Requires a bucket or interaction.
+*   **Feeding Requirements**:
+    *   Each `animal_feed` restores hunger to 100%.
+    *   Hunger decays by 2% every minute. Growth stops below 30% hunger.
+    *   An animal needs **~3-4 feeds** to grow from baby to fully grown (over 2 hours).
+    *   Feed roughly every **30-35 minutes** to maintain continuous growth.
+*   **Product Rewards**:
+    *   Selling **fully grown animals** rewards you with products (Milk, Wool, Eggs, Meat, Leather, etc.).
+    *   Manure is collected from ground piles around the ranch using a `shovel`.
 *   **Ranch Management**:
     *   Job-locked ranches (MacFarlane, Emerald, Pronghorn, etc.).
     *   "My Herd" menu to manage and spawn your owned animals.
@@ -40,7 +45,7 @@ A comprehensive ranching system for RedM using the RSG Core framework. This reso
     ALTER TABLE rsg_ranch_animals MODIFY COLUMN scale DECIMAL(6,5) DEFAULT 0.50000;
     ```
 3.  **Config**: Review `config.lua` to adjust settings to your server's economy.
-4.  **Images**: Copy the provided asset images to your inventory resource (`rsg-inventory/html/images`) and the ranch resource (`rsg-ranch/html/assets`).
+4.  **Images**: Copy the asset images from `rsg-ranch/html/assets` to your inventory resource (`rsg-inventory/html/images`).
 
 ## ⚙️ Configuration Guide
 
