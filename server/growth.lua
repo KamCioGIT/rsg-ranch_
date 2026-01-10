@@ -31,7 +31,7 @@ CreateThread(function()
                 -- BULK UPDATE: Single query for all hunger decay (async)
                 oxmysql:execute([[
                     UPDATE rsg_ranch_animals 
-                    SET hunger = GREATEST(0, hunger - ?) 
+                    SET hunger = GREATEST(0, CAST(hunger AS SIGNED) - ?) 
                     WHERE animalid IN (?)
                 ]], {decayAmount, ids})
                 
