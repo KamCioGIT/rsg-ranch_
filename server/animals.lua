@@ -40,9 +40,15 @@ RegisterNetEvent('rsg-ranch:server:feedAnimal', function(animalId)
     
     if Player.Functions.RemoveItem(Config.FeedItem, 1) then
         oxmysql:update('UPDATE rsg_ranch_animals SET hunger = 100, health = LEAST(100, health + 10) WHERE animalid = ?', {animalId})
-        TriggerClientEvent('ox_lib:notify', src, {title = 'Animal Fed', type = 'success'})
-        -- No refresh needed here usually, but if stats sync needed:
-        -- TriggerEvent('rsg-ranch:server:refreshAnimals') 
+        
+        -- Fetch and sync new stats so UI updates immediately
+        oxmysql:single('SELECT * FROM rsg_ranch_animals WHERE animalid = ?', {animalId}, function(animal)
+            if animal then
+                TriggerClientEvent('rsg-ranch:client:spawnAnimals', src, {animal})
+            end
+        end)
+
+        TriggerClientEvent('ox_lib:notify', src, {title = 'Animal Fed', type = 'success'}) 
     else
         TriggerClientEvent('ox_lib:notify', src, {title = 'Need Food', type = 'error'})
     end
