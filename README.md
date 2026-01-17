@@ -1,4 +1,4 @@
-# RSG Ranch - Advanced Animal Husbandry for RedM
+#  Ranch - Advanced Animal Husbandry for RedM
 
 A comprehensive ranching system for RedM using the RSG Core framework. This resource allows players to own ranches, buy and raise animals, collect products, craft items, and sell livestock for profit.
 
