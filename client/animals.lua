@@ -219,7 +219,12 @@ function SetupAnimalTarget(ped, animalId, animalData)
                             gender = freshData.gender or 'female',
                             scale = tonumber(freshData.scale) or 0.5,
                             born = tonumber(freshData.born) or os.time(),
-                            nextGrowth = ((tonumber(freshData.scale) or 1.0) >= (Config.Growth.DefaultMaxScale or 1.0)) and "Fully Grown" or nextTime
+                            nextGrowth = ((tonumber(freshData.scale) or 1.0) >= (Config.Growth.DefaultMaxScale or 1.0)) and "Fully Grown" or nextTime,
+                            -- Pass dynamic config values
+                            growthRate = Config.Growth.ScaleIncrease,
+                            growthTick = Config.Growth.TickRate,
+                            maxScale = Config.Growth.DefaultMaxScale,
+                            startScale = Config.Growth.DefaultStartScale
                         }
                     })
                 end)

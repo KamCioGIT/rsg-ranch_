@@ -529,39 +529,59 @@ function openAnimalStatus(data) {
     }
 
     // Store initial values for live updates
+    // Use dynamic values from Lua if available, else fallback
     let scale = data.scale || 0.5;
-    let startScale = 0.5;
-    let maxScale = 1.0;
+    let startScale = data.startScale || 0.5;
+    let maxScale = data.maxScale || 1.0;
+
+    // Calculate progress percentage
     let progress = Math.min(100, Math.max(0, ((scale - startScale) / (maxScale - startScale)) * 100));
     let calculatedAge = Math.floor(progress / 10);
 
-    // Calculate time remaining based on SCALE progress (Option A - only while spawned+fed)
-    // Total growth time = 2 hours, progress determines how much time is left
-    let totalGrowthTime = 120 * 60; // 2 hours in seconds
-    let baseSecondsRemaining = Math.max(0, ((100 - progress) / 100) * totalGrowthTime);
+    // Calculate time remaining dynamically using Config values passed from Lua
+    let totalGrowthTime = null;
+    if (data.growthRate && data.growthTick) {
+        // (0.5 growth needed / growth per tick) * (ms per tick / 1000 to get seconds)
+        let growthNeeded = maxScale - startScale;
+        let ticksNeeded = growthNeeded / data.growthRate;
+        totalGrowthTime = ticksNeeded * (data.growthTick / 1000);
+    } else {
+        console.error("RSG-Ranch UI Error: Missing Config.Growth data from client!");
+    }
+
+    let baseSecondsRemaining = 0;
+    if (totalGrowthTime !== null) {
+        baseSecondsRemaining = Math.max(0, ((100 - progress) / 100) * totalGrowthTime);
+    }
+
     let startTime = Date.now();
     let isPaused = data.hunger < 30; // Timer paused if hungry
 
     function updateDisplay() {
-        let secondsRemaining = baseSecondsRemaining;
-
-        // Only countdown if not paused (hunger >= 30)
-        if (!isPaused) {
-            let elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-            secondsRemaining = Math.max(0, baseSecondsRemaining - elapsedSeconds);
-        }
-
-        let hoursRemaining = Math.floor(secondsRemaining / 3600);
-        let minsRemaining = Math.floor((secondsRemaining % 3600) / 60);
-        let secsRemaining = Math.floor(secondsRemaining % 60);
-
         let growthStatusText = "";
-        if (data.nextGrowth === "Fully Grown" || progress >= 100) {
+
+        if (totalGrowthTime === null) {
+            growthStatusText = "⚠️ Error: Missing Config Data";
+        } else if (data.nextGrowth === "Fully Grown" || progress >= 100) {
             growthStatusText = "🌟 Fully Grown & Ready!";
-        } else if (isPaused) {
-            growthStatusText = `⏸️ Timer Paused (Feed Me!) | ${progress.toFixed(0)}% | ${hoursRemaining}h ${minsRemaining}m`;
         } else {
-            growthStatusText = `📈 Growing: ${progress.toFixed(0)}% | ⏱️ ${hoursRemaining}h ${minsRemaining}m ${secsRemaining}s`;
+            let secondsRemaining = baseSecondsRemaining;
+
+            // Only countdown if not paused (hunger >= 30)
+            if (!isPaused) {
+                let elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+                secondsRemaining = Math.max(0, baseSecondsRemaining - elapsedSeconds);
+            }
+
+            let hoursRemaining = Math.floor(secondsRemaining / 3600);
+            let minsRemaining = Math.floor((secondsRemaining % 3600) / 60);
+            let secsRemaining = Math.floor(secondsRemaining % 60);
+
+            if (isPaused) {
+                growthStatusText = `⏸️ Timer Paused (Feed Me!) | ${progress.toFixed(0)}% | ${hoursRemaining}h ${minsRemaining}m`;
+            } else {
+                growthStatusText = `📈 Growing: ${progress.toFixed(0)}% | ⏱️ ${hoursRemaining}h ${minsRemaining}m ${secsRemaining}s`;
+            }
         }
 
         // Update the timer element

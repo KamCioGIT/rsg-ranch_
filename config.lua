@@ -7,12 +7,12 @@ Config.ANIMAL_ID_MAX = 999999
 Config.FeedItem = 'animal_feed'
 
 
--- Growth Settings (2 hours IRL = 120 minutes to fully grow)
+-- Growth Settings (3 hours IRL = 180 minutes to fully grow)
 -- Animals MUST be fed (hunger >= 30) at each tick to continue growing
 -- Hunger decays each tick, so feeding is required throughout growth
 Config.Growth = {
     TickRate = 60 * 1000,          -- Check every 1 minute
-    ScaleIncrease = 0.00417,       -- 0.5 / 120 = grows fully in 120 ticks (2 hours)
+    ScaleIncrease = 0.00278,       -- 0.5 / 180 = grows fully in 180 ticks (3 hours)
     DefaultStartScale = 0.5,       -- Start small (baby)
     DefaultMaxScale = 1.0,         -- Adult size
     HungerDecayPerTick = 2,        -- How much hunger drops each tick
