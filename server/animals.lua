@@ -1,23 +1,49 @@
 local RSGCore = exports['rsg-core']:GetCoreObject()
 local oxmysql = exports.oxmysql
 
-SpawnedAnimals = {} -- Global for tracking
+SpawnedAnimals = {} -- format: [animalId] = { ranchId = "job", netId = 123 }
+
+-- Helper to safely get ranchId
+local function GetRanchId(animalId)
+    local data = SpawnedAnimals[tonumber(animalId)] or SpawnedAnimals[tostring(animalId)]
+    return data and data.ranchId or nil
+end
+
+-- Update NetID from Client
+RegisterNetEvent('rsg-ranch:server:updateNetId', function(animalId, netId)
+    local id = tonumber(animalId)
+    if SpawnedAnimals[id] then
+        SpawnedAnimals[id].netId = netId
+        -- print('[Ranch System] Registered NetID '..netId..' for Animal '..id)
+    end
+end)
 
 -- Fetch animals
 RegisterNetEvent('rsg-ranch:server:refreshAnimals', function()
     local src = source
-    local ids = {}
+    local queryIds = {}
+    local activeData = {}
+    
     for k, v in pairs(SpawnedAnimals) do
-        if v then table.insert(ids, k) end
+        if v and v.ranchId then 
+            table.insert(queryIds, k)
+            activeData[k] = v.netId
+        end
     end
     
-    if #ids > 0 then
-    -- Use query for SELECT
-    oxmysql:query('SELECT * FROM rsg_ranch_animals WHERE animalid IN (?)', {ids}, function(result)
-        if result then
-            TriggerClientEvent('rsg-ranch:client:spawnAnimals', src, result)
-        end
-    end)
+    if #queryIds > 0 then
+        oxmysql:query('SELECT * FROM rsg_ranch_animals WHERE animalid IN (?)', {queryIds}, function(result)
+            if result then
+                -- Attach known NetIDs to the result before sending
+                for i, animal in ipairs(result) do
+                    local aid = tonumber(animal.animalid)
+                    if activeData[aid] then
+                        animal.netId = activeData[aid]
+                    end
+                end
+                TriggerClientEvent('rsg-ranch:client:spawnAnimals', src, result)
+            end
+        end)
     end
 end)
 
@@ -28,7 +54,6 @@ RegisterNetEvent('rsg-ranch:server:despawnAnimal', function(animalId)
     
     if SpawnedAnimals[idNum] then SpawnedAnimals[idNum] = nil end
     if SpawnedAnimals[idStr] then SpawnedAnimals[idStr] = nil end
-    if SpawnedAnimals[animalId] then SpawnedAnimals[animalId] = nil end
     
     print('[Ranch System] Despawned animal: ' .. tostring(animalId))
 end)
@@ -41,9 +66,14 @@ RegisterNetEvent('rsg-ranch:server:feedAnimal', function(animalId)
     if Player.Functions.RemoveItem(Config.FeedItem, 1) then
         oxmysql:update('UPDATE rsg_ranch_animals SET hunger = 100, health = LEAST(100, health + 10) WHERE animalid = ?', {animalId})
         
-        -- Fetch and sync new stats so UI updates immediately
+        -- Fetch and sync new stats
         oxmysql:single('SELECT * FROM rsg_ranch_animals WHERE animalid = ?', {animalId}, function(animal)
             if animal then
+                -- Attach existing NetID so client updates properly
+                local active = SpawnedAnimals[tonumber(animalId)] or SpawnedAnimals[tostring(animalId)]
+                if active and active.netId then
+                    animal.netId = active.netId
+                end
                 TriggerClientEvent('rsg-ranch:client:spawnAnimals', src, {animal})
             end
         end)
@@ -55,13 +85,11 @@ RegisterNetEvent('rsg-ranch:server:feedAnimal', function(animalId)
 end)
 
 
-
 -- Collect Logic
 RegisterNetEvent('rsg-ranch:server:collectProduct', function(animalId)
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)
     
-    -- In real system, check 'product_ready' column in DB
     oxmysql:query('SELECT model, product_ready FROM rsg_ranch_animals WHERE animalid = ?', {animalId}, function(result)
         if result and result[1] then
             local model = result[1].model
@@ -70,7 +98,6 @@ RegisterNetEvent('rsg-ranch:server:collectProduct', function(animalId)
             
             if productData then
                 if isReady == 1 then
-                    -- Add item & Reset DB
                     if Player.Functions.AddItem(productData.product, productData.amount) then
                         oxmysql:execute('UPDATE rsg_ranch_animals SET product_ready = 0, last_production = ? WHERE animalid = ?', {os.time(), animalId})
                         TriggerClientEvent('ox_lib:notify', src, {title = 'Collected ' .. productData.product, type = 'success'})
@@ -93,7 +120,6 @@ RegisterNetEvent('rsg-ranch:server:attemptBreed', function(animalId)
     local chance = math.random(1, 100)
     
     if chance > 50 then
-        -- Success
         oxmysql:execute('UPDATE rsg_ranch_animals SET pregnant = 1 WHERE animalid = ?', {animalId})
         TriggerClientEvent('ox_lib:notify', src, {title = 'Animal Pregnant', description = 'This animal is now expecting offspring.', type = 'success'})
     else
@@ -103,17 +129,15 @@ end)
 
 local DeadAnimals = {}
 
--- Spawn Ranch Animals (Triggered by Boss Menu)
--- Spawn Ranch Animals (Triggered by Boss Menu)
+-- Animal Death
 RegisterNetEvent('rsg-ranch:server:animalDied', function(animalId)
     local src = source
     local id = tonumber(animalId)
     if not id then return end
     
     print("[Ranch System] Animal Died: " .. id)
-    DeadAnimals[id] = os.time() + 300 -- 5 Minute Cooldown
+    DeadAnimals[id] = os.time() + 300 
     
-    -- Clear from spawned tracking
     SpawnedAnimals[id] = nil 
     SpawnedAnimals[tostring(id)] = nil
     
@@ -125,8 +149,7 @@ RegisterNetEvent('rsg-ranch:server:spawnSpecificAnimal', function(animalId)
     local id = tonumber(animalId)
     if not id then return end
     
-    -- Check 1: Already Spawned
-    if SpawnedAnimals[id] then
+    if GetRanchId(id) then
         TriggerClientEvent('ox_lib:notify', src, {title = 'Already Spawned', description = 'This animal is already out.', type = 'error'})
         return
     end
@@ -135,12 +158,10 @@ RegisterNetEvent('rsg-ranch:server:spawnSpecificAnimal', function(animalId)
     local PlayerJob = Player.PlayerData.job
     local ranchId = PlayerJob.name
     
-    -- Check 2: Max Limit (5)
     local count = 0
-    for _, rId in pairs(SpawnedAnimals) do
-        if rId == ranchId then count = count + 1 end
+    for _, v in pairs(SpawnedAnimals) do
+        if v.ranchId == ranchId then count = count + 1 end
     end
-    
     
     if count >= 5 then
         TriggerClientEvent('ox_lib:notify', src, {title = 'Limit Reached', description = 'Max 5 animals allowed at once.', type = 'error'})
@@ -153,16 +174,12 @@ RegisterNetEvent('rsg-ranch:server:spawnSpecificAnimal', function(animalId)
         return
     end
     
-    -- print('[Ranch System] DEBUG: Searching DB for animalid: ' .. id .. ' ranchid: ' .. tostring(ranchId))
-
     oxmysql:single('SELECT * FROM rsg_ranch_animals WHERE animalid = ? AND ranchid = ?', {animalId, ranchId}, function(animal)
         if animal then
-            -- print('[Ranch System] DEBUG: Animal found. Model: ' .. tostring(animal.model))
-            SpawnedAnimals[animal.animalid] = ranchId -- Store ranch ownership
+            SpawnedAnimals[animal.animalid] = { ranchId = ranchId, netId = nil } -- Initialize
             TriggerClientEvent('rsg-ranch:client:spawnAnimals', src, {animal})
             TriggerClientEvent('ox_lib:notify', src, {title = 'Animal Called', description = 'Spawning animal '..animalId, type = 'success'})
         else
-            print('[Ranch System] Animal NOT found in DB.')
             TriggerClientEvent('ox_lib:notify', src, {title = 'Error', description = 'Animal not found', type = 'error'})
         end
     end)
@@ -170,15 +187,13 @@ end)
 
 RegisterNetEvent('rsg-ranch:server:spawnRanchAnimals', function()
     local src = source
-    -- print('[Ranch System] DEBUG: spawnRanchAnimals triggered by source ' .. src)
     local Player = RSGCore.Functions.GetPlayer(src)
     local PlayerJob = Player.PlayerData.job
     local ranchId = PlayerJob.name
     
-    -- Count current
     local count = 0
-    for _, rId in pairs(SpawnedAnimals) do
-        if rId == ranchId then count = count + 1 end
+    for _, v in pairs(SpawnedAnimals) do
+        if v.ranchId == ranchId then count = count + 1 end
     end
     
     if count >= 5 then
@@ -186,45 +201,35 @@ RegisterNetEvent('rsg-ranch:server:spawnRanchAnimals', function()
         return
     end
     
-    -- Removed LIMIT 5 to allow all animals to spawn
-    -- Switched to query for correct SELECT behavior
     oxmysql:query('SELECT * FROM rsg_ranch_animals WHERE ranchid = ?', {ranchId}, function(animals)
         if animals then
-            -- print('[Ranch System] DEBUG: Database returned ' .. #animals .. ' animals for ranch ' .. tostring(ranchId))
             if #animals > 0 then
-                local spawnedSome = false
                 local spawnList = {}
                 
                 for _, animal in ipairs(animals) do
-                    -- Stop if limit reached
                     if count >= 5 then break end
                     
                     local aid = animal.animalid
-                    -- Skip if dead or already spawned
                     local isDead = (DeadAnimals[aid] and os.time() < DeadAnimals[aid])
-                    local isActive = (SpawnedAnimals[aid] ~= nil)
+                    local isActive = GetRanchId(aid) ~= nil
                     
                     if not isDead and not isActive then
-                        SpawnedAnimals[aid] = ranchId
+                        SpawnedAnimals[aid] = { ranchId = ranchId, netId = nil }
                         count = count + 1
                         table.insert(spawnList, animal)
-                        spawnedSome = true
                     end
                 end
                 
-                if spawnedSome then
+                if #spawnList > 0 then
                     TriggerClientEvent('rsg-ranch:client:spawnAnimals', src, spawnList)
                     TriggerClientEvent('ox_lib:notify', src, {title = 'Ranch Animals Called', description = 'Spawning ' .. #spawnList .. ' animals.', type = 'success'})
                 else
                     TriggerClientEvent('ox_lib:notify', src, {title = 'Validation', description = 'Active animals: '..count..'/5. Others may be dead/active.', type = 'inform'})
                 end
             else
-                -- print('[Ranch System] DEBUG: No animals in tables.')
                 TriggerClientEvent('ox_lib:notify', src, {title = 'No animals found for this ranch', type = 'error'})
             end
-        else
-            print('[Ranch System] Database query returned nil.')
-            TriggerClientEvent('ox_lib:notify', src, {title = 'Database Error', type = 'error'})
         end
     end)
 end)
+
