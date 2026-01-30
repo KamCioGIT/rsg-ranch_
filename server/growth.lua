@@ -16,12 +16,15 @@ CreateThread(function()
             local ids = {}
             local ranchAnimals = {} -- Track which animals belong to which ranch
             
-            for id, ranchId in pairs(SpawnedAnimals) do
+            for id, data in pairs(SpawnedAnimals) do
+                -- data is { ranchId = "...", citizenid = "...", netId = ... }
+                local rId = data.ranchId
+                
                 table.insert(ids, id)
-                if not ranchAnimals[ranchId] then
-                    ranchAnimals[ranchId] = {}
+                if not ranchAnimals[rId] then
+                    ranchAnimals[rId] = {}
                 end
-                table.insert(ranchAnimals[ranchId], id)
+                table.insert(ranchAnimals[rId], id)
             end
             
             if #ids > 0 then

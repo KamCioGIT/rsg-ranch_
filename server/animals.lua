@@ -158,13 +158,18 @@ RegisterNetEvent('rsg-ranch:server:spawnSpecificAnimal', function(animalId)
     local PlayerJob = Player.PlayerData.job
     local ranchId = PlayerJob.name
     
+    local citizenId = Player.PlayerData.citizenid
+    
     local count = 0
     for _, v in pairs(SpawnedAnimals) do
-        if v.ranchId == ranchId then count = count + 1 end
+        -- Strict Personal Limit: Only count animals spawned by THIS person
+        if v.ranchId == ranchId and v.citizenid == citizenId then 
+            count = count + 1 
+        end
     end
     
     if count >= 5 then
-        TriggerClientEvent('ox_lib:notify', src, {title = 'Limit Reached', description = 'Max 5 animals allowed at once.', type = 'error'})
+        TriggerClientEvent('ox_lib:notify', src, {title = 'Limit Reached', description = 'You can only have 5 of YOUR animals out at once.', type = 'error'})
         return
     end
         
@@ -174,13 +179,14 @@ RegisterNetEvent('rsg-ranch:server:spawnSpecificAnimal', function(animalId)
         return
     end
     
-    oxmysql:single('SELECT * FROM rsg_ranch_animals WHERE animalid = ? AND ranchid = ?', {animalId, ranchId}, function(animal)
+    -- Strict Ownership Check
+    oxmysql:single('SELECT * FROM rsg_ranch_animals WHERE animalid = ? AND ranchid = ? AND citizenid = ?', {animalId, ranchId, citizenId}, function(animal)
         if animal then
-            SpawnedAnimals[animal.animalid] = { ranchId = ranchId, netId = nil } -- Initialize
+            SpawnedAnimals[animal.animalid] = { ranchId = ranchId, netId = nil, citizenid = citizenId } -- Track Owner
             TriggerClientEvent('rsg-ranch:client:spawnAnimals', src, {animal})
             TriggerClientEvent('ox_lib:notify', src, {title = 'Animal Called', description = 'Spawning animal '..animalId, type = 'success'})
         else
-            TriggerClientEvent('ox_lib:notify', src, {title = 'Error', description = 'Animal not found', type = 'error'})
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Error', description = 'Animal not found or not yours.', type = 'error'})
         end
     end)
 end)
@@ -191,9 +197,11 @@ RegisterNetEvent('rsg-ranch:server:spawnRanchAnimals', function()
     local PlayerJob = Player.PlayerData.job
     local ranchId = PlayerJob.name
     
+    local citizenId = Player.PlayerData.citizenid
+    
     local count = 0
     for _, v in pairs(SpawnedAnimals) do
-        if v.ranchId == ranchId then count = count + 1 end
+        if v.ranchId == ranchId and v.citizenid == citizenId then count = count + 1 end
     end
     
     if count >= 5 then
@@ -201,7 +209,8 @@ RegisterNetEvent('rsg-ranch:server:spawnRanchAnimals', function()
         return
     end
     
-    oxmysql:query('SELECT * FROM rsg_ranch_animals WHERE ranchid = ?', {ranchId}, function(animals)
+    -- Only fetch MY animals
+    oxmysql:query('SELECT * FROM rsg_ranch_animals WHERE ranchid = ? AND citizenid = ?', {ranchId, citizenId}, function(animals)
         if animals then
             if #animals > 0 then
                 local spawnList = {}
@@ -214,7 +223,7 @@ RegisterNetEvent('rsg-ranch:server:spawnRanchAnimals', function()
                     local isActive = GetRanchId(aid) ~= nil
                     
                     if not isDead and not isActive then
-                        SpawnedAnimals[aid] = { ranchId = ranchId, netId = nil }
+                        SpawnedAnimals[aid] = { ranchId = ranchId, netId = nil, citizenid = citizenId }
                         count = count + 1
                         table.insert(spawnList, animal)
                     end

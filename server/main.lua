@@ -59,8 +59,8 @@ RegisterNetEvent('rsg-ranch:server:buyItem', function(data)
             for i = 1, amount do
                 local animalId = baseId + math.random(1, 9999) + (i * 10)
                 
-                oxmysql:insert('INSERT INTO rsg_ranch_animals (animalid, model, pos_x, pos_y, pos_z, pos_w, scale, age, ranchid, born, name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', {
-                    animalId, model, spawnCoords.x, spawnCoords.y, spawnCoords.z, spawnCoords.w, startScale, 0, ranchId, os.time(), data.label or model
+                oxmysql:insert('INSERT INTO rsg_ranch_animals (animalid, model, pos_x, pos_y, pos_z, pos_w, scale, age, ranchid, born, name, citizenid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', {
+                    animalId, model, spawnCoords.x, spawnCoords.y, spawnCoords.z, spawnCoords.w, startScale, 0, ranchId, os.time(), data.label or model, PlayerNow.PlayerData.citizenid
                 })
             end
 
@@ -82,9 +82,10 @@ RegisterNetEvent('rsg-ranch:server:sellItem', function(data)
     local ranchId = PlayerJob.name
     
     -- ASYNC: Fetch animal without blocking
-    oxmysql:single('SELECT * FROM rsg_ranch_animals WHERE animalid = ? AND ranchid = ?', {animalId, ranchId}, function(result)
+    -- Strict Ownership: Must match citizenid
+    oxmysql:single('SELECT * FROM rsg_ranch_animals WHERE animalid = ? AND ranchid = ? AND citizenid = ?', {animalId, ranchId, Player.PlayerData.citizenid}, function(result)
         if not result then
-            TriggerClientEvent('ox_lib:notify', src, {title = 'Sale Failed', description = 'Animal not found or already sold.', type = 'error'})
+            TriggerClientEvent('ox_lib:notify', src, {title = 'Sale Failed', description = 'Animal not found, already sold, or not yours.', type = 'error'})
             return
         end
         
@@ -172,8 +173,8 @@ RegisterNetEvent('rsg-ranch:server:sellAllAnimals', function()
     local PlayerJob = Player.PlayerData.job
     local ranchId = PlayerJob.name
     
-    -- Fetch all animals for this ranch
-    oxmysql:query('SELECT * FROM rsg_ranch_animals WHERE ranchid = ?', {ranchId}, function(animals)
+    -- Fetch all animals for this ranch owned by THIS player
+    oxmysql:query('SELECT * FROM rsg_ranch_animals WHERE ranchid = ? AND citizenid = ?', {ranchId, Player.PlayerData.citizenid}, function(animals)
         if not animals or #animals == 0 then
             TriggerClientEvent('ox_lib:notify', src, {title = 'Sale Failed', description = 'No animals found to sell.', type = 'error'})
             return
@@ -232,8 +233,8 @@ RegisterNetEvent('rsg-ranch:server:sellAllAnimals', function()
             TriggerEvent('rsg-ranch:server:despawnAnimal', animal.animalid)
         end
         
-        -- Delete all animals from DB
-        oxmysql:execute('DELETE FROM rsg_ranch_animals WHERE ranchid = ?', {ranchId})
+        -- Delete ONLY THIS PLAYER'S animals from DB
+        oxmysql:execute('DELETE FROM rsg_ranch_animals WHERE ranchid = ? AND citizenid = ?', {ranchId, Player.PlayerData.citizenid})
         
         -- Give money to player
         PlayerNow.Functions.AddMoney('cash', totalPlayerShare)
@@ -601,8 +602,13 @@ RSGCore.Functions.CreateCallback('rsg-ranch:server:getOwnedAnimals', function(so
     local Player = RSGCore.Functions.GetPlayer(source)
     if not Player then return cb({}) end
     local ranchId = Player.PlayerData.job.name
+    local citizenId = Player.PlayerData.citizenid
     
-    oxmysql:query('SELECT * FROM rsg_ranch_animals WHERE ranchid = ?', {ranchId}, function(result)
+    -- Strict Personal Ownership for EVERYONE (including Bosses)
+    local query = 'SELECT * FROM rsg_ranch_animals WHERE ranchid = ? AND citizenid = ?'
+    local params = {ranchId, citizenId}
+    
+    oxmysql:query(query, params, function(result)
         if result then
             for _, animal in ipairs(result) do
                  -- Convert Age from Ticks (minutes) to Ranch Days
@@ -769,6 +775,15 @@ CreateThread(function()
         if not result or #result == 0 then
             print('[Ranch System] Adding missing "name" column to rsg_ranch_animals...')
             oxmysql:execute('ALTER TABLE `rsg_ranch_animals` ADD COLUMN `name` VARCHAR(50) DEFAULT NULL', {})
+        end
+    end)
+
+    -- Migration: Ensure 'citizenid' column exists (For Personal Ownership)
+    oxmysql:execute('SHOW COLUMNS FROM `rsg_ranch_animals` LIKE "citizenid"', {}, function(result)
+        if not result or #result == 0 then
+            print('[Ranch System] Adding missing "citizenid" column to rsg_ranch_animals...')
+            oxmysql:execute('ALTER TABLE `rsg_ranch_animals` ADD COLUMN `citizenid` VARCHAR(50) DEFAULT NULL', {})
+            -- Optional: Update existing animals to belong to "system" or leave null
         end
     end)
 end)
