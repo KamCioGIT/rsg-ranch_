@@ -58,10 +58,16 @@ CreateThread(function()
                 for ranchId, animalIds in pairs(ranchAnimals) do
                     oxmysql:query('SELECT * FROM rsg_ranch_animals WHERE animalid IN (?)', {animalIds}, function(result)
                         if result and #result > 0 then
-                            -- Get players at this ranch
-                            local ranchPlayers = GetRanchPlayers(ranchId)
-                            for _, src in ipairs(ranchPlayers) do
-                                TriggerClientEvent('rsg-ranch:client:spawnAnimals', src, result)
+                            -- DIRECT SYNC: Send update to each animal's owner
+                            -- Pre-sort by source to optimize events if possible, or just send individual
+                            
+                            for _, animal in ipairs(result) do
+                                if animal.citizenid then
+                                    local owner = RSGCore.Functions.GetPlayerByCitizenId(animal.citizenid)
+                                    if owner then
+                                        TriggerClientEvent('rsg-ranch:client:spawnAnimals', owner.PlayerData.source, {animal})
+                                    end
+                                end
                             end
                         end
                     end)
