@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `rsg_ranch_employees` (
 CREATE TABLE IF NOT EXISTS `rsg_ranch_animals` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ranchid` varchar(50) NOT NULL,
+  `citizenid` varchar(50) DEFAULT NULL, -- Added for personal ownership
   `animalid` bigint(20) NOT NULL,
   `model` varchar(50) NOT NULL,
   `name` varchar(50) DEFAULT NULL,
